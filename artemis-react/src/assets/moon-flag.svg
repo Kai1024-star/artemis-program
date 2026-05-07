@@ -1,0 +1,39 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="160" rx="34" fill="url(#space)"/>
+  <path d="M20 104C48 89 85 84 136 94" stroke="url(#orbit)" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 8"/>
+  <circle cx="77" cy="87" r="48" fill="url(#moon)"/>
+  <circle cx="58" cy="72" r="8" fill="#aeb8c9" opacity=".72"/>
+  <circle cx="93" cy="99" r="11" fill="#aeb8c9" opacity=".45"/>
+  <circle cx="72" cy="116" r="5" fill="#96a3b8" opacity=".35"/>
+  <circle cx="104" cy="73" r="4" fill="#d6dce7" opacity=".8"/>
+  <path d="M43 113C58 126 89 134 119 106C105 135 65 145 43 113Z" fill="#8f9caf" opacity=".18"/>
+  <path d="M82 45L91 116" stroke="#18345d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M88 46C103 37 119 42 137 36L133 69C116 75 101 67 92 74L88 46Z" fill="url(#flag)"/>
+  <path d="M88 46C103 37 119 42 137 36" stroke="#ff7a66" stroke-width="2" stroke-linecap="round" opacity=".72"/>
+  <path d="M91 116C77 123 62 125 49 120" stroke="#6d7890" stroke-width="4" stroke-linecap="round" opacity=".36"/>
+  <circle cx="33" cy="41" r="2" fill="white" opacity=".78"/>
+  <circle cx="125" cy="111" r="2.5" fill="#9ee9ff" opacity=".7"/>
+  <circle cx="124" cy="25" r="1.5" fill="white" opacity=".55"/>
+  <defs>
+    <linearGradient id="space" x1="19" y1="18" x2="136" y2="146" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8fbff"/>
+      <stop offset=".48" stop-color="#edf5ff"/>
+      <stop offset="1" stop-color="#dce8fb"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="20" y1="93" x2="136" y2="93" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2f65ff" stop-opacity="0"/>
+      <stop offset=".45" stop-color="#2f65ff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#dd361c" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="moon" x1="50" y1="49" x2="109" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f8fafc"/>
+      <stop offset=".55" stop-color="#d9e0eb"/>
+      <stop offset="1" stop-color="#aeb8c9"/>
+    </linearGradient>
+    <linearGradient id="flag" x1="89" y1="42" x2="136" y2="68" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff533f"/>
+      <stop offset=".56" stop-color="#e93222"/>
+      <stop offset="1" stop-color="#b91f18"/>
+    </linearGradient>
+  </defs>
+</svg>

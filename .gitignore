@@ -1,0 +1,8 @@
+.env
+artemis-react/.env
+__pycache__/
+.venv/
+node_modules/
+dist/
+.DS_Store
+*.pyc
