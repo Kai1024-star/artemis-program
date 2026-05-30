@@ -17,9 +17,27 @@ Recommended settings:
 - Environment variables:
   - `HOST=0.0.0.0`
   - `PORT` should usually be provided by the platform automatically
-  - `OPENAI_API_KEY=...` if AI modes are needed
-  - `OPENAI_MODEL=gpt-5.4`
+  - `ARTEMIS_API_KEY=...` or `OPENAI_API_KEY=...` if AI modes are needed
+  - `ARTEMIS_MODEL=gpt-5.4` or `OPENAI_MODEL=gpt-5.4`
+  - `ARTEMIS_BASE_URL=...` or `OPENAI_BASE_URL=...` when using an OpenAI-compatible provider
+  - `ARTEMIS_LLM_API_STYLE=chat` for most OpenAI-compatible providers; use `responses` for OpenAI Responses API
   - `CORS_ORIGIN=*` for quick team testing
+
+OpenAI-compatible examples:
+
+```text
+# DeepSeek
+ARTEMIS_API_KEY=sk-...
+ARTEMIS_MODEL=deepseek-chat
+ARTEMIS_BASE_URL=https://api.deepseek.com
+ARTEMIS_LLM_API_STYLE=chat
+
+# OpenRouter
+ARTEMIS_API_KEY=sk-or-...
+ARTEMIS_MODEL=openai/gpt-4o-mini
+ARTEMIS_BASE_URL=https://openrouter.ai/api/v1
+ARTEMIS_LLM_API_STYLE=chat
+```
 
 After deployment, copy the API URL, for example:
 

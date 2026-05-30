@@ -10,6 +10,9 @@ import zekaiAvatar from "./assets/Zekai.png";
 const modes = ["recall", "balanced", "strict"];
 const STORAGE_KEY = "artemis:lastRows";
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://127.0.0.1:8765").replace(/\/$/, "");
+const REQUEST_TIMEOUT_MS = 180000;
+const FULL_BATCH_SIZE = 8;
+const JUDGE_BATCH_SIZE = 16;
 const typeLabels = {
   cul: "文化",
   eco: "经济",
@@ -84,6 +87,44 @@ async function runPythonExtraction(payload, options, signal) {
     throw new Error(data.error || "Python API 没有返回有效结果。");
   }
   return data;
+}
+
+function getPayloadItems(payload) {
+  if (Array.isArray(payload)) {
+    return { items: payload, key: null };
+  }
+  if (!payload || typeof payload !== "object") {
+    return { items: [], key: null };
+  }
+  const key = ["data", "items", "sentences", "records", "segments"].find((name) => Array.isArray(payload[name]));
+  return { items: key ? payload[key] : [], key };
+}
+
+function buildChunkPayload(payload, key, items) {
+  if (Array.isArray(payload)) {
+    return items;
+  }
+  return { ...payload, [key]: items };
+}
+
+function chunkList(items, size) {
+  const chunks = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function dedupeRows(rows) {
+  const seen = new Set();
+  return rows.filter((row) => {
+    const key = `${String(row.term_src || "").trim().toLowerCase()}::${String(row.term_tgt || "").trim().toLowerCase()}`;
+    if (!row.term_src || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 async function checkApiHealth(signal) {
@@ -264,13 +305,6 @@ export default function App() {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    const timeout = window.setTimeout(() => controller.abort(), 180000);
-    progressTimerRef.current = window.setInterval(() => {
-      setProgress((prev) => ({
-        ...prev,
-        percent: Math.min(94, prev.percent + (llmMode === "full" ? 1 : 4)),
-      }));
-    }, 1500);
 
     try {
       const ok = await checkApiHealth(controller.signal);
@@ -278,27 +312,66 @@ export default function App() {
       if (!ok) {
         throw new Error("Python API 没有启动。");
       }
-      setRuntime(llmMode === "full" ? "Python V3.1 / full 正在调用 AI..." : `Python V3.1 / ${llmMode}`);
-      const result = await runPythonExtraction(payload, {
-        mode,
-        llmMode,
-        allowEmptyTarget,
-        includeNamedEntities,
-      }, controller.signal);
-      setRows(result.rows);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(result.rows));
-      setRuntime(`Python V3.1 / ${result.effectiveLlmMode}`);
+
+      const { items, key } = getPayloadItems(payload);
+      const batchSize = llmMode === "full" ? FULL_BATCH_SIZE : llmMode === "judge" ? JUDGE_BATCH_SIZE : items.length || 1;
+      const chunks = key || Array.isArray(payload) ? chunkList(items, batchSize) : [items];
+      const totalPairs = items.length || 1;
+      const collectedRows = [];
+      let effectiveLlmMode = llmMode;
+      let processedPairs = 0;
+
+      setProgress({ current: 0, total: totalPairs, percent: 1 });
+
+      for (const [chunkIndex, chunkItems] of chunks.entries()) {
+        if (controller.signal.aborted) {
+          throw new DOMException("Aborted", "AbortError");
+        }
+
+        const chunkPayload = key || Array.isArray(payload)
+          ? buildChunkPayload(payload, key, chunkItems)
+          : payload;
+        const label = chunks.length > 1 ? `批次 ${chunkIndex + 1}/${chunks.length}` : "单批";
+        setRuntime(`Python V3.1 / ${llmMode} 正在调用 AI... ${label}`);
+
+        const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        try {
+          const result = await runPythonExtraction(chunkPayload, {
+            mode,
+            llmMode,
+            allowEmptyTarget,
+            includeNamedEntities,
+          }, controller.signal);
+          effectiveLlmMode = result.effectiveLlmMode;
+          collectedRows.push(...(result.rows || []));
+          processedPairs += chunkItems.length || result.totalPairs || 0;
+          const mergedRows = dedupeRows(collectedRows);
+          setRows(mergedRows);
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedRows));
+          setProgress({
+            current: Math.min(processedPairs, totalPairs),
+            total: totalPairs,
+            percent: Math.min(99, Math.round((processedPairs / totalPairs) * 100)),
+          });
+        } finally {
+          window.clearTimeout(timeout);
+        }
+      }
+
+      const finalRows = dedupeRows(collectedRows);
+      setRows(finalRows);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(finalRows));
+      setRuntime(`Python V3.1 / ${effectiveLlmMode}`);
       setExtractionDone(true);
-      setProgress({ current: result.totalPairs, total: result.totalPairs, percent: 100 });
+      setProgress({ current: totalPairs, total: totalPairs, percent: 100 });
     } catch (e) {
       const hint =
         e.name === "AbortError"
-          ? "请求已取消或超过 3 分钟。full 模式会逐句调用 AI，建议先用 judge 或减少输入句数。"
+          ? "当前批次已取消或超过 3 分钟。full 模式会逐句调用 AI，建议先用 judge，或把批次大小调小后重新部署。"
           : `${e.message || "未知错误"} 请确认项目根目录里的 python artemis_api.py 正在运行。`;
       setError(`运行失败：${hint}`);
       setProgress({ current: 0, total: 0, percent: 0 });
     } finally {
-      window.clearTimeout(timeout);
       stopProgressTimer();
       abortRef.current = null;
       setRunning(false);

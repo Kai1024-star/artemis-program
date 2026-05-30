@@ -18,6 +18,8 @@ pip install pandas openpyxl openai python-dotenv
 .env 示例：
 OPENAI_API_KEY=你的新 key
 OPENAI_MODEL=gpt-5.4
+OPENAI_BASE_URL=https://api.openai.com/v1
+ARTEMIS_LLM_API_STYLE=responses  # responses 或 chat
 
 推荐运行：
 python artemis_v3_1.py input/你的文件.json --mode balanced --llm-mode full
@@ -55,6 +57,24 @@ DEFAULT_MODEL = (
     or os.getenv("ARTEMIS_MODEL")
     or "gpt-5.4"
 )
+DEFAULT_API_KEY = (
+    os.getenv("ARTEMIS_API_KEY")
+    or os.getenv("OPENAI_API_KEY")
+    or ""
+)
+DEFAULT_BASE_URL = (
+    os.getenv("ARTEMIS_BASE_URL")
+    or os.getenv("OPENAI_BASE_URL")
+    or os.getenv("OPENAI_API_BASE")
+    or ""
+)
+DEFAULT_LLM_API_STYLE = (
+    os.getenv("ARTEMIS_LLM_API_STYLE")
+    or os.getenv("OPENAI_API_STYLE")
+    or ("chat" if DEFAULT_BASE_URL else "responses")
+)
+if DEFAULT_LLM_API_STYLE not in {"responses", "chat"}:
+    DEFAULT_LLM_API_STYLE = "chat" if DEFAULT_BASE_URL else "responses"
 
 MODE_CONFIG = {
     # recall：适合初筛，保留 core + context + glossary
@@ -87,7 +107,9 @@ MODE_CONFIG = {
 
 CONFIG = {
     "model": DEFAULT_MODEL,
-    "api_key": os.getenv("OPENAI_API_KEY", ""),
+    "api_key": DEFAULT_API_KEY,
+    "base_url": DEFAULT_BASE_URL,
+    "llm_api_style": DEFAULT_LLM_API_STYLE,
 
     # full: AI 补充候选 + AI 裁判 + AI 对齐
     # judge: 只对算法候选做 AI 裁判 + AI 对齐
@@ -1086,7 +1108,51 @@ def llm_is_enabled() -> bool:
 
 def get_openai_client():
     from openai import OpenAI
-    return OpenAI(api_key=CONFIG["api_key"], timeout=30.0)
+    kwargs = {"api_key": CONFIG["api_key"], "timeout": 30.0}
+    if CONFIG["base_url"]:
+        kwargs["base_url"] = CONFIG["base_url"]
+    return OpenAI(**kwargs)
+
+
+def call_llm_responses(client: Any, prompt: str) -> str:
+    response = client.responses.create(
+        model=CONFIG["model"],
+        input=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a strict terminology extraction and bilingual term alignment assistant. "
+                    "Return only valid JSON. Do not include markdown."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+    )
+    return normalize_text(response.output_text)
+
+
+def call_llm_chat_completions(client: Any, prompt: str) -> str:
+    response = client.chat.completions.create(
+        model=CONFIG["model"],
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a strict terminology extraction and bilingual term alignment assistant. "
+                    "Return only valid JSON. Do not include markdown."
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        temperature=0,
+    )
+    return normalize_text(response.choices[0].message.content or "")
 
 
 def call_llm_json_array(prompt: str, task_name: str) -> List[Any]:
@@ -1098,24 +1164,10 @@ def call_llm_json_array(prompt: str, task_name: str) -> List[Any]:
 
     for attempt in range(1, CONFIG["llm_retries"] + 1):
         try:
-            response = client.responses.create(
-                model=CONFIG["model"],
-                input=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a strict terminology extraction and bilingual term alignment assistant. "
-                            "Return only valid JSON. Do not include markdown."
-                        ),
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-            )
-
-            text = normalize_text(response.output_text)
+            if CONFIG["llm_api_style"] == "chat":
+                text = call_llm_chat_completions(client, prompt)
+            else:
+                text = call_llm_responses(client, prompt)
             arr = extract_json_array(text)
             if isinstance(arr, list):
                 return arr
@@ -1779,6 +1831,25 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--api-key",
+        default=CONFIG["api_key"],
+        help="LLM API key。默认读取 ARTEMIS_API_KEY 或 OPENAI_API_KEY。",
+    )
+
+    parser.add_argument(
+        "--base-url",
+        default=CONFIG["base_url"],
+        help="OpenAI-compatible API base URL。默认读取 ARTEMIS_BASE_URL 或 OPENAI_BASE_URL。",
+    )
+
+    parser.add_argument(
+        "--llm-api-style",
+        choices=["responses", "chat"],
+        default=CONFIG["llm_api_style"],
+        help="LLM 调用接口。OpenAI 默认 responses；第三方兼容接口通常用 chat。",
+    )
+
+    parser.add_argument(
         "--debug-read",
         action="store_true",
         help="只读取 JSON 并打印前 5 条 src/tgt。",
@@ -1803,6 +1874,9 @@ def main():
     CONFIG["require_target_substring"] = args.require_target_substring
     CONFIG["include_named_entities"] = args.include_named_entities
     CONFIG["model"] = args.model
+    CONFIG["api_key"] = args.api_key
+    CONFIG["base_url"] = args.base_url
+    CONFIG["llm_api_style"] = args.llm_api_style
     CONFIG["debug_candidates"] = args.debug_candidates
 
     if args.ai_weight is not None:
@@ -1818,7 +1892,7 @@ def main():
         CONFIG["max_terms_per_sentence"] = args.max_terms_per_sentence
 
     if CONFIG["llm_mode"] != "off" and not CONFIG["api_key"]:
-        print("[WARN] 没有检测到 OPENAI_API_KEY，自动切换到 --llm-mode off。")
+        print("[WARN] 没有检测到 ARTEMIS_API_KEY 或 OPENAI_API_KEY，自动切换到 --llm-mode off。")
         CONFIG["llm_mode"] = "off"
 
     input_path = args.input_json
@@ -1832,6 +1906,9 @@ def main():
     print(f"[INFO] Mode: {CONFIG['mode']}")
     print(f"[INFO] LLM mode: {CONFIG['llm_mode']}")
     print(f"[INFO] Model: {CONFIG['model']}")
+    print(f"[INFO] LLM API style: {CONFIG['llm_api_style']}")
+    if CONFIG["base_url"]:
+        print(f"[INFO] LLM base URL: {CONFIG['base_url']}")
     print(f"[INFO] AI weight: {CONFIG['ai_weight']}")
     print(f"[INFO] Algorithm candidate min score: {CONFIG['algo_min_score']}")
     print(f"[INFO] Final min score: {CONFIG['final_min_score']}")
