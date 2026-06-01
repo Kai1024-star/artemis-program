@@ -2,5 +2,6 @@ pandas
 openpyxl
 openai
 python-dotenv
+numpy
 aeneas
 boto3
