@@ -12,7 +12,7 @@ Use Render, Railway, Fly.io, or another Python web service.
 Recommended settings:
 
 - Root directory: project root
-- Build command: `pip install -r requirements.txt`
+- Build command: `bash render-build.sh`
 - Start command: `python artemis_api.py`
 - Runtime: Python 3.12 is pinned in `runtime.txt`
 - Environment variables:
