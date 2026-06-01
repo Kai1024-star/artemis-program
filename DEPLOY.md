@@ -14,6 +14,7 @@ Recommended settings:
 - Root directory: project root
 - Build command: `pip install -r requirements.txt`
 - Start command: `python artemis_api.py`
+- Runtime: Python 3.12 is pinned in `runtime.txt`
 - Environment variables:
   - `HOST=0.0.0.0`
   - `PORT` should usually be provided by the platform automatically
@@ -22,6 +23,18 @@ Recommended settings:
   - `ARTEMIS_BASE_URL=...` or `OPENAI_BASE_URL=...` when using an OpenAI-compatible provider
   - `ARTEMIS_LLM_API_STYLE=chat` for most OpenAI-compatible providers; use `responses` for OpenAI Responses API
   - `CORS_ORIGIN=*` for quick team testing
+
+Subtitle alignment also needs AWS Polly credentials for aeneas:
+
+- `AWS_ACCESS_KEY_ID=...`
+- `AWS_SECRET_ACCESS_KEY=...`
+- `AWS_DEFAULT_REGION=ap-northeast-1` or another Polly-supported region
+
+The project includes an `Aptfile` for system packages used by subtitle alignment:
+
+- `ffmpeg`
+- `espeak`
+- `libespeak-dev`
 
 OpenAI-compatible examples:
 
@@ -91,4 +104,10 @@ Open:
 
 ```text
 http://127.0.0.1:5173/
+```
+
+Subtitle alignment page:
+
+```text
+http://127.0.0.1:5173/align.html
 ```

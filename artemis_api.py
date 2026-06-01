@@ -3,12 +3,15 @@
 
 import json
 import os
+import shutil
 import tempfile
+from cgi import FieldStorage
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict
 
 import artemis_v3_1 as artemis
+from subtitle_aligner import align_text_audio_to_srt
 
 
 HOST = os.getenv("HOST", "127.0.0.1")
@@ -40,6 +43,7 @@ def _binary_response(
     handler.send_header("Access-Control-Allow-Origin", CORS_ORIGIN)
     handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
     handler.send_header("Access-Control-Allow-Headers", "Content-Type")
+    handler.send_header("Access-Control-Expose-Headers", "Content-Disposition")
     handler.send_header("Content-Disposition", f'attachment; filename="{filename}"')
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
@@ -84,6 +88,9 @@ class ArtemisHandler(BaseHTTPRequestHandler):
             return
         if self.path == "/api/export-xlsx":
             self._handle_export_xlsx()
+            return
+        if self.path == "/api/align-srt":
+            self._handle_align_srt()
             return
         _json_response(self, 404, {"ok": False, "error": "Not found"})
 
@@ -145,6 +152,66 @@ class ArtemisHandler(BaseHTTPRequestHandler):
                 body,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "artemis_terms.xlsx",
+            )
+        except Exception as exc:
+            _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+
+    def _handle_align_srt(self) -> None:
+        try:
+            content_type = self.headers.get("Content-Type", "")
+            if "multipart/form-data" not in content_type:
+                raise ValueError("Expected multipart/form-data")
+
+            form = FieldStorage(
+                fp=self.rfile,
+                headers=self.headers,
+                environ={
+                    "REQUEST_METHOD": "POST",
+                    "CONTENT_TYPE": content_type,
+                },
+            )
+
+            text_field = form["textFile"] if "textFile" in form else None
+            audio_field = form["audioFile"] if "audioFile" in form else None
+            if text_field is None or not getattr(text_field, "file", None):
+                raise ValueError("Missing textFile")
+            if audio_field is None or not getattr(audio_field, "file", None):
+                raise ValueError("Missing audioFile")
+
+            output_name = form.getfirst("outputName", "artemis_alignment")
+            language = form.getfirst("language", "Mizuki")
+            voice_id = form.getfirst("voiceId", "Mizuki")
+
+            with tempfile.TemporaryDirectory() as tmp_dir_name:
+                tmp_dir = Path(tmp_dir_name)
+                text_path = tmp_dir / "input.txt"
+                audio_suffix = Path(getattr(audio_field, "filename", "") or "audio.wav").suffix or ".wav"
+                audio_path = tmp_dir / f"audio{audio_suffix}"
+                output_dir = tmp_dir / "output"
+
+                with text_path.open("wb") as f:
+                    shutil.copyfileobj(text_field.file, f)
+                with audio_path.open("wb") as f:
+                    shutil.copyfileobj(audio_field.file, f)
+
+                artifacts = align_text_audio_to_srt(
+                    text_path=text_path,
+                    audio_path=audio_path,
+                    output_dir=output_dir,
+                    output_name=output_name,
+                    language=language,
+                    voice_id=voice_id,
+                )
+                body = artifacts["srt"].read_bytes()
+                filename = artifacts["srt"].name
+
+            _binary_response(
+                self,
+                200,
+                body,
+                "application/x-subrip; charset=utf-8",
+                filename,
             )
         except Exception as exc:
             _json_response(self, 500, {"ok": False, "error": str(exc)})

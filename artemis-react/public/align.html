@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARTEMIS 字幕时间轴对齐</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #eef4fb;
+        color: #10244a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(236, 244, 254, 0.96)),
+          repeating-linear-gradient(90deg, rgba(20, 63, 130, 0.045) 0, rgba(20, 63, 130, 0.045) 1px, transparent 1px, transparent 96px);
+      }
+
+      .page {
+        width: min(1160px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 28px 0 44px;
+      }
+
+      .topbar,
+      .panel {
+        border: 1px solid rgba(36, 67, 120, 0.18);
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 18px 50px rgba(49, 88, 151, 0.12);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 76px;
+        padding: 18px 22px;
+        background: #080d17;
+        color: #fff;
+      }
+
+      .brand {
+        font-size: clamp(24px, 3vw, 38px);
+        font-weight: 950;
+        letter-spacing: 0.18em;
+      }
+
+      .topbar a {
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 13px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .hero {
+        padding: 44px 0 26px;
+      }
+
+      .hero p {
+        margin: 0 0 10px;
+        color: #dd361c;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        max-width: 900px;
+        margin: 0;
+        color: #10244a;
+        font-size: clamp(34px, 6vw, 72px);
+        line-height: 1.02;
+      }
+
+      .hero span {
+        display: block;
+        max-width: 760px;
+        margin-top: 16px;
+        color: #526991;
+        font-size: 17px;
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 22px;
+        align-items: start;
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .panel.dark {
+        background: #09101c;
+        color: #fff;
+      }
+
+      .section-title {
+        margin: 0 0 18px;
+        color: #10244a;
+        font-size: 24px;
+      }
+
+      .dark .section-title {
+        color: #fff;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      label {
+        color: #5a7099;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      input {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid rgba(79, 110, 168, 0.32);
+        border-radius: 8px;
+        background: #fff;
+        color: #10244a;
+        padding: 11px 12px;
+        font: inherit;
+      }
+
+      input:focus {
+        border-color: rgba(16, 91, 216, 0.72);
+        box-shadow: 0 0 0 4px rgba(16, 91, 216, 0.08);
+        outline: none;
+      }
+
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      button {
+        width: 100%;
+        min-height: 52px;
+        border: 0;
+        border-radius: 8px;
+        background: #10244a;
+        color: #fff;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 950;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .status {
+        min-height: 56px;
+        margin-top: 18px;
+        border: 1px solid rgba(16, 91, 216, 0.18);
+        border-radius: 8px;
+        background: #f5f9ff;
+        padding: 14px;
+        color: #203b68;
+        line-height: 1.55;
+      }
+
+      .status.error {
+        border-color: rgba(221, 54, 28, 0.42);
+        background: rgba(221, 54, 28, 0.08);
+        color: #a3291a;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .steps li {
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        padding: 14px;
+        color: rgba(255, 255, 255, 0.76);
+        line-height: 1.55;
+      }
+
+      .steps strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #fff;
+      }
+
+      .note {
+        margin-top: 18px;
+        color: rgba(255, 255, 255, 0.58);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      @media (max-width: 880px) {
+        .grid,
+        .two {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="brand">ARTEMIS</div>
+        <a href="/">返回术语抽取系统</a>
+      </header>
+
+      <section class="hero">
+        <p>Subtitle Alignment Console</p>
+        <h1>日语音频时间轴对齐</h1>
+        <span>上传一段日语录音音频，以及已经按句切好的日语文本。系统会调用 aeneas 与 AWS Mizuki，为每一句文本生成 SRT 时间轴。</span>
+      </section>
+
+      <section class="grid">
+        <form class="panel" id="align-form">
+          <h2 class="section-title">生成 SRT</h2>
+          <div class="field">
+            <label for="text-file">日语句子 TXT</label>
+            <input id="text-file" name="textFile" type="file" accept=".txt,text/plain" required />
+          </div>
+          <div class="field">
+            <label for="audio-file">日语音频</label>
+            <input id="audio-file" name="audioFile" type="file" accept=".wav,.mp3,.m4a,audio/*" required />
+          </div>
+          <div class="field">
+            <label for="output-name">输出文件名</label>
+            <input id="output-name" name="outputName" type="text" value="artemis_alignment" />
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="language">Aeneas Language</label>
+              <input id="language" name="language" type="text" value="Mizuki" />
+            </div>
+            <div class="field">
+              <label for="voice-id">AWS Voice</label>
+              <input id="voice-id" name="voiceId" type="text" value="Mizuki" />
+            </div>
+          </div>
+          <button id="submit-button" type="submit">开始对齐并下载 SRT</button>
+          <div class="status" id="status">等待上传 TXT 和音频。</div>
+        </form>
+
+        <aside class="panel dark">
+          <h2 class="section-title">流程</h2>
+          <ol class="steps">
+            <li><strong>1. 读取文本</strong>TXT 中每一行会成为一条字幕。</li>
+            <li><strong>2. 调用 aeneas</strong>aeneas 使用 AWS Polly Mizuki 辅助分析文本与音频。</li>
+            <li><strong>3. 返回字幕</strong>后端生成 JSON，再转换为 SRT 并返回浏览器下载。</li>
+          </ol>
+          <p class="note">上线后 Render 必须配置 AWS 凭证、ffmpeg、espeak 和 aeneas。不要把 AWS key 写进代码或发在聊天里。</p>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const API_BASE = location.hostname.includes("localhost") || location.hostname === "127.0.0.1"
+        ? "http://127.0.0.1:8765"
+        : "https://artemis-api-b5da.onrender.com";
+
+      const form = document.getElementById("align-form");
+      const statusBox = document.getElementById("status");
+      const submitButton = document.getElementById("submit-button");
+
+      function setStatus(message, isError = false) {
+        statusBox.textContent = message;
+        statusBox.classList.toggle("error", isError);
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        submitButton.disabled = true;
+        setStatus("正在上传并对齐。音频较长时可能需要几分钟，请不要关闭页面。");
+
+        try {
+          const response = await fetch(`${API_BASE}/api/align-srt`, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.error || "后端没有返回有效 SRT。");
+          }
+
+          const blob = new Blob([await response.arrayBuffer()], {
+            type: "application/x-subrip;charset=utf-8",
+          });
+          const disposition = response.headers.get("content-disposition") || "";
+          const match = disposition.match(/filename="([^"]+)"/);
+          const fallbackName = `${formData.get("outputName") || "artemis_alignment"}.srt`;
+          const filename = match?.[1] || fallbackName;
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setStatus(`完成：${filename} 已开始下载。`);
+        } catch (error) {
+          setStatus(`运行失败：${error.message || "未知错误"}`, true);
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
