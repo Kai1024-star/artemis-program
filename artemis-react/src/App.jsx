@@ -484,6 +484,10 @@ export default function App() {
             </div>
             <span className="status-pill">LOCAL</span>
           </div>
+          <a className="align-entry" href="/align.html">
+            <span>SUBTITLE ALIGNMENT</span>
+            <strong>字幕时间轴对齐</strong>
+          </a>
           <div className={apiOnline ? "api-card online" : "api-card"}>
             <span>{apiOnline === null ? "CHECKING API" : apiOnline ? "PYTHON API ONLINE" : "PYTHON API OFFLINE"}</span>
             <strong>{apiOnline ? `${API_BASE} 已连接` : "确认 Python API 已部署或本机运行"}</strong>
