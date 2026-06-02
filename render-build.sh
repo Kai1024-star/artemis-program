@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export AENEAS_WITH_CEW=False
+
 python -m pip install --upgrade "pip<25" "setuptools<60" wheel
 python -m pip install "numpy==1.26.4"
 tmp_dir="$(mktemp -d)"
@@ -18,18 +20,6 @@ tar -xzf "$archive" -C "$tmp_dir"
 source_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d -name 'aeneas-*' | head -n 1)"
 cd "$source_dir"
 rm -f pyproject.toml
-python - <<'PY'
-import re
-from pathlib import Path
-
-setup_path = Path("setup.py")
-setup_source = setup_path.read_text(encoding="utf-8")
-setup_source, replacements = re.subn(r"(?m)^[ \t]*EXTENSION_CEW,[ \t]*\n", "", setup_source)
-if replacements < 1:
-    raise SystemExit("Unable to remove EXTENSION_CEW from setup.py")
-setup_path.write_text(setup_source, encoding="utf-8")
-print(f"Removed {replacements} EXTENSION_CEW entry from aeneas setup.py")
-PY
 python setup.py install
 cd /opt/render/project/src
 python -m pip install -r requirements.txt
