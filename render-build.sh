@@ -18,6 +18,14 @@ tar -xzf "$archive" -C "$tmp_dir"
 source_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d -name 'aeneas-*' | head -n 1)"
 cd "$source_dir"
 rm -f pyproject.toml
-AENEAS_WITH_CEW=False python setup.py install
+python - <<'PY'
+from pathlib import Path
+
+setup_path = Path("setup.py")
+setup_source = setup_path.read_text(encoding="utf-8")
+setup_source = setup_source.replace("        EXTENSION_CEW,\n", "")
+setup_path.write_text(setup_source, encoding="utf-8")
+PY
+python setup.py install
 cd /opt/render/project/src
 python -m pip install -r requirements.txt

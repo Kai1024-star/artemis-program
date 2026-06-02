@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import json
+import re
 import subprocess
 import sys
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, List
+
+
+ANSI_PATTERN = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def clean_process_output(value: str) -> str:
+    return ANSI_PATTERN.sub("", value).replace("\r", "").strip()
 
 
 def to_srt_time(seconds: str) -> str:
@@ -69,7 +77,11 @@ def run_aeneas_alignment(
         text=True,
     )
     if result.returncode != 0:
-        details = result.stderr.strip() or result.stdout.strip() or "aeneas alignment failed"
+        details = clean_process_output(result.stderr or result.stdout or "aeneas alignment failed")
+        if log_path.exists():
+            log_tail = clean_process_output(log_path.read_text(encoding="utf-8", errors="replace")[-4000:])
+            if log_tail:
+                details = f"{details}\n\n--- aeneas log ---\n{log_tail}"
         raise RuntimeError(details[-2000:])
 
 
