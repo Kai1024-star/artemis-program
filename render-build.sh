@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade "pip<25" "setuptools<60" wheel
 python -m pip install "numpy==1.26.4"
 tmp_dir="$(mktemp -d)"
 archive="$tmp_dir/aeneas-1.7.3.0.tar.gz"
