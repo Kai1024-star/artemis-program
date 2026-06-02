@@ -14,7 +14,7 @@ Recommended settings:
 - Root directory: project root
 - Build command: `bash render-build.sh`
 - Start command: `python artemis_api.py`
-- Runtime: Python 3.12 is pinned in `runtime.txt`
+- Runtime: Python 3.11 is pinned in `runtime.txt` and `.python-version`
 - Environment variables:
   - `HOST=0.0.0.0`
   - `PORT` should usually be provided by the platform automatically
@@ -35,6 +35,7 @@ The project includes an `Aptfile` for system packages used by subtitle alignment
 - `ffmpeg`
 - `espeak`
 - `libespeak-dev`
+- `build-essential`
 
 OpenAI-compatible examples:
 
