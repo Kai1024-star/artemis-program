@@ -18,6 +18,6 @@ tar -xzf "$archive" -C "$tmp_dir"
 source_dir="$(find "$tmp_dir" -mindepth 1 -maxdepth 1 -type d -name 'aeneas-*' | head -n 1)"
 cd "$source_dir"
 rm -f pyproject.toml
-python setup.py install
+AENEAS_WITH_CEW=False python setup.py install
 cd /opt/render/project/src
 python -m pip install -r requirements.txt
