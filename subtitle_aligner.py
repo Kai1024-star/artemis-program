@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -69,12 +70,17 @@ def run_aeneas_alignment(
         f"-l={log_path}",
         str(output_json_path),
     ]
+    env = os.environ.copy()
+    aws_region = env.get("AWS_DEFAULT_REGION") or env.get("AWS_REGION") or "ap-northeast-1"
+    env["AWS_DEFAULT_REGION"] = aws_region
+    env["AWS_REGION"] = aws_region
 
     result = subprocess.run(
         command,
         check=False,
         capture_output=True,
         text=True,
+        env=env,
     )
     if result.returncode != 0:
         details = clean_process_output(result.stderr or result.stdout or "aeneas alignment failed")
