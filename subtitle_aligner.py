@@ -56,7 +56,7 @@ def run_aeneas_alignment(
     output_json_path: Path,
     log_path: Path,
     *,
-    language: str = "Mizuki",
+    language: str = "ja",
     voice_id: str = "Mizuki",
 ) -> None:
     command = [
@@ -66,7 +66,7 @@ def run_aeneas_alignment(
         str(audio_path),
         str(text_path),
         f"task_language={language}|is_text_type=plain|os_task_file_format=json",
-        f"-r=tts=aws|allow_unlisted_languages=True|voiceId={voice_id}",
+        f"-r=tts=aws|allow_unlisted_languages=True|tts_voice_code={voice_id}",
         f"-l={log_path}",
         str(output_json_path),
     ]
@@ -74,6 +74,9 @@ def run_aeneas_alignment(
     aws_region = env.get("AWS_DEFAULT_REGION") or env.get("AWS_REGION") or "ap-northeast-1"
     env["AWS_DEFAULT_REGION"] = aws_region
     env["AWS_REGION"] = aws_region
+    compat_path = Path(__file__).resolve().parent / "aeneas_compat"
+    pythonpath = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(compat_path) if not pythonpath else f"{compat_path}{os.pathsep}{pythonpath}"
 
     result = subprocess.run(
         command,

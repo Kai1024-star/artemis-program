@@ -180,8 +180,8 @@ class ArtemisHandler(BaseHTTPRequestHandler):
                 raise ValueError("Missing audioFile")
 
             output_name = form.getfirst("outputName", "artemis_alignment")
-            language = form.getfirst("language", "Mizuki")
-            voice_id = form.getfirst("voiceId", "Mizuki")
+            language = form.getfirst("language", "ja") or "ja"
+            voice_id = form.getfirst("voiceId", "Mizuki") or "Mizuki"
 
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 tmp_dir = Path(tmp_dir_name)

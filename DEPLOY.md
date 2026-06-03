@@ -28,7 +28,8 @@ Subtitle alignment also needs AWS Polly credentials for aeneas:
 
 - `AWS_ACCESS_KEY_ID=...`
 - `AWS_SECRET_ACCESS_KEY=...`
-- `AWS_DEFAULT_REGION=ap-northeast-1` or another Polly-supported region
+- `AWS_DEFAULT_REGION=us-east-1` or another Polly-supported region
+- `AWS_REGION=us-east-1` or the same region as `AWS_DEFAULT_REGION`
 
 The project includes an `Aptfile` for system packages used by subtitle alignment:
 
