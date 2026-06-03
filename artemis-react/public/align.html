@@ -186,6 +186,81 @@
         line-height: 1.55;
       }
 
+      .progress-panel {
+        display: none;
+        margin-top: 18px;
+        border: 1px solid rgba(16, 91, 216, 0.2);
+        border-radius: 8px;
+        background: linear-gradient(180deg, #f8fbff, #edf5ff);
+        padding: 16px;
+      }
+
+      .progress-panel.active {
+        display: grid;
+        gap: 12px;
+      }
+
+      .progress-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        color: #10244a;
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .progress-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .pulse {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #24b8d8;
+        box-shadow: 0 0 0 0 rgba(36, 184, 216, 0.38);
+        animation: pulse 1.5s ease-out infinite;
+      }
+
+      .progress-track {
+        overflow: hidden;
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(16, 36, 74, 0.12);
+      }
+
+      .progress-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #16325f, #1d6fd8 56%, #24b8d8);
+        transition: width 420ms ease;
+      }
+
+      .progress-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        color: #60759b;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .progress-step {
+        border: 1px solid rgba(16, 91, 216, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 8px 10px;
+      }
+
+      .progress-step.done {
+        border-color: rgba(36, 184, 216, 0.42);
+        color: #10244a;
+      }
+
       .status.error {
         border-color: rgba(221, 54, 28, 0.42);
         background: rgba(221, 54, 28, 0.08);
@@ -222,13 +297,28 @@
 
       @media (max-width: 880px) {
         .grid,
-        .two {
+        .two,
+        .progress-steps {
           grid-template-columns: 1fr;
         }
 
         .topbar {
           align-items: flex-start;
           flex-direction: column;
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(36, 184, 216, 0.38);
+        }
+
+        72% {
+          box-shadow: 0 0 0 10px rgba(36, 184, 216, 0);
+        }
+
+        100% {
+          box-shadow: 0 0 0 0 rgba(36, 184, 216, 0);
         }
       }
     </style>
@@ -272,6 +362,23 @@
             </div>
           </div>
           <button id="submit-button" type="submit">开始对齐并下载 SRT</button>
+          <div class="progress-panel" id="progress-panel" aria-live="polite">
+            <div class="progress-head">
+              <div class="progress-label">
+                <span class="pulse" aria-hidden="true"></span>
+                <span id="progress-stage">待命</span>
+              </div>
+              <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-steps">
+              <div class="progress-step" id="step-upload">上传文件</div>
+              <div class="progress-step" id="step-align">分析时间轴</div>
+              <div class="progress-step" id="step-download">生成 SRT</div>
+            </div>
+          </div>
           <div class="status" id="status">等待上传 TXT 和音频。</div>
         </form>
 
@@ -295,16 +402,67 @@
       const form = document.getElementById("align-form");
       const statusBox = document.getElementById("status");
       const submitButton = document.getElementById("submit-button");
+      const progressPanel = document.getElementById("progress-panel");
+      const progressFill = document.getElementById("progress-fill");
+      const progressPercent = document.getElementById("progress-percent");
+      const progressStage = document.getElementById("progress-stage");
+      const stepUpload = document.getElementById("step-upload");
+      const stepAlign = document.getElementById("step-align");
+      const stepDownload = document.getElementById("step-download");
+      let progressTimer = null;
+      let progressValue = 0;
 
       function setStatus(message, isError = false) {
         statusBox.textContent = message;
         statusBox.classList.toggle("error", isError);
       }
 
+      function setProgress(value, stage) {
+        progressValue = Math.max(0, Math.min(100, value));
+        progressFill.style.width = `${progressValue}%`;
+        progressPercent.textContent = `${Math.round(progressValue)}%`;
+        progressStage.textContent = stage;
+        stepUpload.classList.toggle("done", progressValue >= 18);
+        stepAlign.classList.toggle("done", progressValue >= 58);
+        stepDownload.classList.toggle("done", progressValue >= 100);
+      }
+
+      function startProgress() {
+        clearInterval(progressTimer);
+        progressPanel.classList.add("active");
+        setProgress(8, "准备上传文件");
+        progressTimer = setInterval(() => {
+          const next = progressValue < 28
+            ? progressValue + 4
+            : progressValue < 72
+              ? progressValue + 2
+              : progressValue < 92
+                ? progressValue + 0.8
+                : progressValue;
+          const stage = next < 28
+            ? "上传文件"
+            : next < 72
+              ? "aeneas 正在分析音频"
+              : "AWS Polly 正在辅助对齐";
+          setProgress(next, stage);
+        }, 900);
+      }
+
+      function finishProgress() {
+        clearInterval(progressTimer);
+        setProgress(100, "SRT 已生成");
+      }
+
+      function failProgress() {
+        clearInterval(progressTimer);
+        setProgress(progressValue || 100, "任务失败");
+      }
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         const formData = new FormData(form);
         submitButton.disabled = true;
+        startProgress();
         setStatus("正在上传并对齐。音频较长时可能需要几分钟，请不要关闭页面。");
 
         try {
@@ -333,8 +491,10 @@
           link.click();
           link.remove();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
+          finishProgress();
           setStatus(`完成：${filename} 已开始下载。`);
         } catch (error) {
+          failProgress();
           setStatus(`运行失败：${error.message || "未知错误"}`, true);
         } finally {
           submitButton.disabled = false;
