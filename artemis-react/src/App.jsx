@@ -488,6 +488,14 @@ export default function App() {
             <span>SUBTITLE ALIGNMENT</span>
             <strong>字幕时间轴对齐</strong>
           </a>
+          <a className="align-entry" href="/moon-plan.html" target="_blank" rel="noreferrer">
+            <span>MOON PLAN FLOW</span>
+            <strong>对齐交付工作台</strong>
+          </a>
+          <a className="align-entry" href="/term-review.html" target="_blank" rel="noreferrer">
+            <span>TERM FINAL REVIEW</span>
+            <strong>术语终审与 Final JSON</strong>
+          </a>
           <div className={apiOnline ? "api-card online" : "api-card"}>
             <span>{apiOnline === null ? "CHECKING API" : apiOnline ? "PYTHON API ONLINE" : "PYTHON API OFFLINE"}</span>
             <strong>{apiOnline ? `${API_BASE} 已连接` : "确认 Python API 已部署或本机运行"}</strong>
@@ -670,6 +678,16 @@ export default function App() {
                 <p className="micro">MOON TO MARS</p>
                 <h1>ARTEMIS 术语抽取系统</h1>
                 <p>上传中日句对 JSON，智能提取可复用术语并导出表格。</p>
+                <div className="hero-actions" aria-label="Artemis workflow tools">
+                  <a href="/moon-plan.html" target="_blank" rel="noreferrer">
+                    <span>ALIGN DELIVERY</span>
+                    <strong>对齐交付工作台</strong>
+                  </a>
+                  <a href="/term-review.html" target="_blank" rel="noreferrer">
+                    <span>TERM FINAL</span>
+                    <strong>术语终审与 Final JSON</strong>
+                  </a>
+                </div>
               </div>
             </div>
           </motion.section>

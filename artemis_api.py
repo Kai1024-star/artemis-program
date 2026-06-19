@@ -5,10 +5,13 @@ import json
 import os
 import shutil
 import tempfile
-from cgi import FieldStorage
+from email.parser import BytesParser
+from email.policy import default as email_policy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict
+
+import pandas as pd
 
 import artemis_v3_1 as artemis
 from subtitle_aligner import align_text_audio_to_srt
@@ -25,7 +28,7 @@ def _json_response(handler: BaseHTTPRequestHandler, status: int, payload: Dict[s
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Access-Control-Allow-Origin", CORS_ORIGIN)
     handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    handler.send_header("Access-Control-Allow-Headers", "Content-Type")
+    handler.send_header("Access-Control-Allow-Headers", "Content-Type, X-Filename")
     handler.send_header("Content-Length", str(len(body)))
     handler.end_headers()
     handler.wfile.write(body)
@@ -42,7 +45,7 @@ def _binary_response(
     handler.send_header("Content-Type", content_type)
     handler.send_header("Access-Control-Allow-Origin", CORS_ORIGIN)
     handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-    handler.send_header("Access-Control-Allow-Headers", "Content-Type")
+    handler.send_header("Access-Control-Allow-Headers", "Content-Type, X-Filename")
     handler.send_header("Access-Control-Expose-Headers", "Content-Disposition")
     handler.send_header("Content-Disposition", f'attachment; filename="{filename}"')
     handler.send_header("Content-Length", str(len(body)))
@@ -67,6 +70,48 @@ def _configure_artemis(options: Dict[str, Any]) -> str:
     return artemis.CONFIG["llm_mode"]
 
 
+def _clean_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    cleaned: list[dict[str, Any]] = []
+    for record in records:
+        row: dict[str, Any] = {}
+        for key, value in record.items():
+            if pd.isna(value):
+                row[str(key)] = ""
+            elif isinstance(value, float) and value.is_integer():
+                row[str(key)] = int(value)
+            else:
+                row[str(key)] = value
+        cleaned.append(row)
+    return cleaned
+
+
+def _read_body(handler: BaseHTTPRequestHandler) -> bytes:
+    length = int(handler.headers.get("Content-Length", "0"))
+    return handler.rfile.read(length)
+
+
+def _read_multipart(handler: BaseHTTPRequestHandler) -> Dict[str, Dict[str, Any]]:
+    content_type = handler.headers.get("Content-Type", "")
+    body = _read_body(handler)
+    header_blob = (
+        f"Content-Type: {content_type}\r\n"
+        "MIME-Version: 1.0\r\n\r\n"
+    ).encode("utf-8")
+    message = BytesParser(policy=email_policy).parsebytes(header_blob + body)
+    fields: Dict[str, Dict[str, Any]] = {}
+    for part in message.iter_parts():
+        name = part.get_param("name", header="content-disposition")
+        if not name:
+            continue
+        payload = part.get_payload(decode=True) or b""
+        fields[name] = {
+            "filename": part.get_filename(),
+            "content": payload,
+            "text": payload.decode("utf-8", errors="replace"),
+        }
+    return fields
+
+
 class ArtemisHandler(BaseHTTPRequestHandler):
     server_version = "ArtemisAPI/0.1"
 
@@ -89,14 +134,16 @@ class ArtemisHandler(BaseHTTPRequestHandler):
         if self.path == "/api/export-xlsx":
             self._handle_export_xlsx()
             return
+        if self.path == "/api/import-term-xlsx":
+            self._handle_import_term_xlsx()
+            return
         if self.path == "/api/align-srt":
             self._handle_align_srt()
             return
         _json_response(self, 404, {"ok": False, "error": "Not found"})
 
     def _read_json_body(self) -> Dict[str, Any]:
-        length = int(self.headers.get("Content-Length", "0"))
-        return json.loads(self.rfile.read(length).decode("utf-8"))
+        return json.loads(_read_body(self).decode("utf-8"))
 
     def _handle_extract(self) -> None:
         try:
@@ -157,43 +204,54 @@ class ArtemisHandler(BaseHTTPRequestHandler):
             _json_response(self, 500, {"ok": False, "error": str(exc)})
             return
 
+    def _handle_import_term_xlsx(self) -> None:
+        try:
+            body = _read_body(self)
+            if not body:
+                raise ValueError("Missing Excel body")
+
+            with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+                tmp.write(body)
+                input_path = tmp.name
+
+            try:
+                df = pd.read_excel(input_path, engine="openpyxl")
+                rows = _clean_records(df.to_dict(orient="records"))
+            finally:
+                Path(input_path).unlink(missing_ok=True)
+
+            _json_response(self, 200, {"ok": True, "rows": rows, "count": len(rows)})
+        except Exception as exc:
+            _json_response(self, 500, {"ok": False, "error": str(exc)})
+            return
+
     def _handle_align_srt(self) -> None:
         try:
             content_type = self.headers.get("Content-Type", "")
             if "multipart/form-data" not in content_type:
                 raise ValueError("Expected multipart/form-data")
 
-            form = FieldStorage(
-                fp=self.rfile,
-                headers=self.headers,
-                environ={
-                    "REQUEST_METHOD": "POST",
-                    "CONTENT_TYPE": content_type,
-                },
-            )
-
-            text_field = form["textFile"] if "textFile" in form else None
-            audio_field = form["audioFile"] if "audioFile" in form else None
-            if text_field is None or not getattr(text_field, "file", None):
+            form = _read_multipart(self)
+            text_field = form.get("textFile")
+            audio_field = form.get("audioFile")
+            if text_field is None or not text_field.get("content"):
                 raise ValueError("Missing textFile")
-            if audio_field is None or not getattr(audio_field, "file", None):
+            if audio_field is None or not audio_field.get("content"):
                 raise ValueError("Missing audioFile")
 
-            output_name = form.getfirst("outputName", "artemis_alignment")
-            language = form.getfirst("language", "ja") or "ja"
-            voice_id = form.getfirst("voiceId", "Mizuki") or "Mizuki"
+            output_name = (form.get("outputName") or {}).get("text", "artemis_alignment")
+            language = (form.get("language") or {}).get("text", "ja") or "ja"
+            voice_id = (form.get("voiceId") or {}).get("text", "Mizuki") or "Mizuki"
 
             with tempfile.TemporaryDirectory() as tmp_dir_name:
                 tmp_dir = Path(tmp_dir_name)
                 text_path = tmp_dir / "input.txt"
-                audio_suffix = Path(getattr(audio_field, "filename", "") or "audio.wav").suffix or ".wav"
+                audio_suffix = Path(audio_field.get("filename") or "audio.wav").suffix or ".wav"
                 audio_path = tmp_dir / f"audio{audio_suffix}"
                 output_dir = tmp_dir / "output"
 
-                with text_path.open("wb") as f:
-                    shutil.copyfileobj(text_field.file, f)
-                with audio_path.open("wb") as f:
-                    shutil.copyfileobj(audio_field.file, f)
+                text_path.write_bytes(text_field["content"])
+                audio_path.write_bytes(audio_field["content"])
 
                 artifacts = align_text_audio_to_srt(
                     text_path=text_path,

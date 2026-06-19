@@ -1,0 +1,1111 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARTEMIS Term Final Review</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #13223d;
+        background: #f5f8fc;
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(180deg, rgba(245, 248, 252, 0.96), rgba(255, 255, 255, 0.98)),
+          repeating-linear-gradient(90deg, rgba(23, 66, 124, 0.05) 0, rgba(23, 66, 124, 0.05) 1px, transparent 1px, transparent 84px);
+      }
+
+      button, input, select, textarea { font: inherit; }
+
+      .page {
+        width: min(1540px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 22px 0 42px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        min-height: 72px;
+        padding: 18px 22px;
+        background: linear-gradient(90deg, #060a12, #12284d);
+        color: #fff;
+        box-shadow: 0 18px 44px rgba(12, 30, 60, 0.2);
+      }
+
+      .brand {
+        margin: 0;
+        font-size: clamp(24px, 3vw, 42px);
+        line-height: 1;
+        font-weight: 950;
+        letter-spacing: 0.13em;
+      }
+
+      .topbar p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .topbar a {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 380px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+        margin-top: 16px;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid rgba(39, 77, 134, 0.16);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 16px 46px rgba(43, 74, 120, 0.1);
+      }
+
+      .side {
+        position: sticky;
+        top: 16px;
+        padding: 18px;
+      }
+
+      .stage {
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .section { padding: 20px; }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: #cf3d28;
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h1, h2, h3 { margin: 0; color: #10244a; }
+      h2 { font-size: 24px; }
+      h3 { font-size: 18px; }
+
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 13px;
+      }
+
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      label, .label {
+        color: #536b95;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid rgba(66, 103, 164, 0.26);
+        border-radius: 6px;
+        background: #fff;
+        color: #10244a;
+        padding: 10px 11px;
+      }
+
+      textarea {
+        min-height: 102px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      .drop-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .drop {
+        display: grid;
+        gap: 8px;
+        min-height: 128px;
+        border: 1px dashed rgba(19, 104, 214, 0.42);
+        border-radius: 8px;
+        background: #f8fbff;
+        padding: 15px;
+      }
+
+      .drop strong { font-size: 16px; }
+
+      .drop span {
+        color: #5c7196;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .actions, .table-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 6px;
+        background: #10244a;
+        color: #fff;
+        cursor: pointer;
+        padding: 0 14px;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      button.secondary {
+        border: 1px solid rgba(16, 36, 74, 0.18);
+        background: #fff;
+        color: #10244a;
+      }
+
+      button.warn { background: #cf3d28; }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        background: #f8fbff;
+        padding: 12px;
+      }
+
+      .metric span {
+        display: block;
+        color: #5c7196;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 22px;
+      }
+
+      .issues, .small-list {
+        display: grid;
+        gap: 8px;
+        max-height: 320px;
+        overflow: auto;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .issue, .small-list li {
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        border-left: 4px solid #d99f1f;
+        background: #fff8e8;
+        padding: 10px 12px;
+        color: #443015;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .issue.error, .small-list li.error {
+        border-left-color: #cf3d28;
+        background: #fff1ef;
+        color: #5b1f17;
+      }
+
+      .issue.ok, .small-list li.ok {
+        border-left-color: #1f9c62;
+        background: #edf9f3;
+        color: #145037;
+      }
+
+      .table-wrap {
+        overflow: auto;
+        max-width: 100%;
+        max-height: 560px;
+        border: 1px solid rgba(39, 77, 134, 0.14);
+      }
+
+      table {
+        width: 100%;
+        min-width: 1640px;
+        border-collapse: collapse;
+        background: #fff;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #10244a;
+        color: #fff;
+        padding: 10px;
+        font-size: 12px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      td {
+        border-top: 1px solid rgba(39, 77, 134, 0.12);
+        padding: 0;
+        vertical-align: top;
+      }
+
+      td input, td textarea, td select {
+        min-height: 42px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      td textarea {
+        min-height: 68px;
+        line-height: 1.45;
+      }
+
+      .row-tools {
+        display: flex;
+        gap: 5px;
+        padding: 7px;
+      }
+
+      .row-tools button {
+        min-height: 30px;
+        padding: 0 8px;
+        font-size: 11px;
+      }
+
+      .preview {
+        min-height: 420px;
+        max-height: 620px;
+        overflow: auto;
+        margin: 0;
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        background: #202b3d;
+        color: #dce8f8;
+        padding: 16px;
+        font-size: 13px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      .json-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 14px;
+      }
+
+      .note {
+        margin: 0 0 14px;
+        border-left: 4px solid #1f9c62;
+        background: #edf9f3;
+        padding: 11px 13px;
+        color: #145037;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .footer-note {
+        margin-top: 16px;
+        color: #61779e;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      body.sheet-fullscreen-lock { overflow: hidden; }
+
+      .review-fullscreen {
+        position: fixed;
+        inset: 14px;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 24px 80px rgba(10, 24, 48, 0.28);
+      }
+
+      .review-fullscreen .section-head {
+        flex: 0 0 auto;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .review-fullscreen .table-wrap {
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 0;
+      }
+
+      .review-fullscreen table { min-width: 1900px; }
+      .review-fullscreen td textarea { min-height: 92px; }
+
+      .fullscreen-hint {
+        display: none;
+        color: #5f7197;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .review-fullscreen .fullscreen-hint { display: inline; }
+
+      @media (max-width: 1080px) {
+        .layout, .json-grid, .drop-grid { grid-template-columns: 1fr; }
+        .side { position: static; }
+        .status-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div>
+          <h1 class="brand">ARTEMIS TERM FINAL</h1>
+          <p>terminology review and final json tagging</p>
+        </div>
+        <a href="http://127.0.0.1:5173/" data-console-link>Back to Console</a>
+      </header>
+      <script>
+        const consoleLink = document.querySelector("[data-console-link]");
+        if (consoleLink && window.location.protocol !== "file:") {
+          consoleLink.href = "/";
+        }
+      </script>
+
+      <main class="layout">
+        <aside class="panel side">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Final Metadata</p>
+              <h2>交付信息</h2>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="alignId">Align ID</label>
+            <input id="alignId" value="zh-en_conf_eco_0001_seg001" />
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="scene">Scene</label>
+              <input id="scene" value="conf" />
+            </div>
+            <div class="field">
+              <label for="domain">Domain</label>
+              <input id="domain" value="eco" />
+            </div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="pair">Pair</label>
+              <input id="pair" value="zh-en" />
+            </div>
+            <div class="field">
+              <label for="segNo">Seg No</label>
+              <input id="segNo" value="seg001" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="finalBy">Final By</label>
+            <input id="finalBy" value="teacher_A" />
+          </div>
+          <div class="field">
+            <label for="finalNotes">Final Notes</label>
+            <textarea id="finalNotes" placeholder="可以记录术语人工终审说明。"></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="generateJson">生成 Final JSON</button>
+            <button type="button" id="downloadExcel" class="secondary">下载 Term Excel</button>
+            <button type="button" id="downloadJson" class="secondary">下载 Final JSON</button>
+          </div>
+          <p class="footer-note">建议命名：<strong id="fileNameHint">zh-en_conf_eco_0001_seg001_final.json</strong></p>
+        </aside>
+
+        <section class="stage">
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Inputs</p>
+                <h2>上传 align JSON 与 term Excel</h2>
+              </div>
+              <div class="actions">
+                <button type="button" id="loadSample" class="secondary">载入样例</button>
+              </div>
+            </div>
+            <div class="drop-grid">
+              <label class="drop" for="baseJson">
+                <strong>Align JSON 底稿</strong>
+                <span>上传上一阶段的 *_align.qc.json，用来保留时间轴、音频路径和句子结构。</span>
+                <input id="baseJson" type="file" accept=".json,application/json" />
+              </label>
+              <label class="drop" for="termFile">
+                <strong>Term Excel / CSV</strong>
+                <span>上传术语抽取导出的 .xlsx，或人工保存的 .csv/.xls。</span>
+                <input id="termFile" type="file" accept=".xlsx,.xls,.csv,text/csv" />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">QC Radar</p>
+                <h2>术语检查</h2>
+              </div>
+              <button type="button" id="runQc" class="secondary">重新检查</button>
+            </div>
+            <div class="status-grid">
+              <div class="metric"><span>Rows</span><strong id="rowCount">0</strong></div>
+              <div class="metric"><span>Kept</span><strong id="keepCount">0</strong></div>
+              <div class="metric"><span>Sentences</span><strong id="sentenceCount">0</strong></div>
+              <div class="metric"><span>Issues</span><strong id="issueCount">0</strong></div>
+            </div>
+            <div id="issues" class="issues" aria-live="polite"></div>
+          </section>
+
+          <section class="panel section" id="reviewPanel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Term Sheet</p>
+                <h2>术语人工终审表</h2>
+                <span class="fullscreen-hint">Esc 退出全屏编辑</span>
+              </div>
+              <div class="table-actions">
+                <button type="button" id="addRow" class="secondary">新增行</button>
+                <button type="button" id="toggleFullscreen" class="secondary">全屏编辑</button>
+                <button type="button" id="downloadExcelSheet" class="secondary">下载 Term Excel</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:70px;">keep</th>
+                    <th style="width:82px;">sent_id</th>
+                    <th style="width:330px;">src_text</th>
+                    <th style="width:330px;">tgt_text</th>
+                    <th style="width:190px;">term_src</th>
+                    <th style="width:220px;">term_tgt</th>
+                    <th style="width:120px;">type</th>
+                    <th style="width:230px;">note</th>
+                    <th style="width:96px;">tools</th>
+                  </tr>
+                </thead>
+                <tbody id="termBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Final JSON</p>
+                <h2>术语标注 JSON</h2>
+              </div>
+              <div class="actions">
+                <button type="button" id="downloadExcelBottom" class="secondary">下载 Term Excel</button>
+                <button type="button" id="downloadJsonBottom" class="secondary">下载 Final JSON</button>
+                <button type="button" id="copyJson" class="secondary">复制</button>
+              </div>
+            </div>
+            <p class="note">
+              Final JSON 会把保留的术语写回句子文本：源语用 <strong>[term_src]{type}</strong>，目标语用 <strong>[term_tgt]{type}</strong>。
+            </p>
+            <div class="json-grid">
+              <pre id="jsonPreview" class="preview">{
+  "status": "等待生成 final JSON"
+}</pre>
+              <div>
+                <h3>验证结果</h3>
+                <ul id="validationList" class="small-list">
+                  <li>上传 term Excel/CSV 后，点击“生成 Final JSON”。</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = "http://127.0.0.1:8765";
+      const VALID_TYPES = new Set(["pol", "eco", "soc", "tech", "cul", "edu", "org", "term", "hot", "num", "tab"]);
+      const REQUIRED_COLUMNS = ["sent_id", "src_text", "tgt_text", "term_src", "term_tgt", "type", "note"];
+      const state = {
+        basePayload: null,
+        rows: [],
+        issues: [],
+        currentJson: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function normalizeKey(key) {
+        return String(key || "").trim().toLowerCase().replace(/\s+/g, "_");
+      }
+
+      function normalizeRow(row, index = 0) {
+        const normalized = {};
+        Object.entries(row || {}).forEach(([key, value]) => {
+          normalized[normalizeKey(key)] = value == null ? "" : value;
+        });
+        return {
+          id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${index}`,
+          keep: normalized.keep === false || normalized.keep === "false" || normalized.keep === "0" ? false : true,
+          sent_id: Number(normalized.sent_id || normalized.sentence_id || index + 1) || index + 1,
+          src_text: String(normalized.src_text || normalized.source_text || ""),
+          tgt_text: String(normalized.tgt_text || normalized.target_text || ""),
+          term_src: String(normalized.term_src || normalized.source_term || ""),
+          term_tgt: String(normalized.term_tgt || normalized.target_term || ""),
+          type: String(normalized.type || normalized.term_type || "term").trim() || "term",
+          note: String(normalized.note || normalized.notes || ""),
+        };
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let cell = "";
+        let row = [];
+        let quoted = false;
+        for (let index = 0; index < text.length; index += 1) {
+          const ch = text[index];
+          const next = text[index + 1];
+          if (quoted && ch === '"' && next === '"') {
+            cell += '"';
+            index += 1;
+          } else if (ch === '"') {
+            quoted = !quoted;
+          } else if (!quoted && ch === ",") {
+            row.push(cell);
+            cell = "";
+          } else if (!quoted && (ch === "\n" || ch === "\r")) {
+            if (ch === "\r" && next === "\n") index += 1;
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = "";
+          } else {
+            cell += ch;
+          }
+        }
+        if (cell || row.length) {
+          row.push(cell);
+          rows.push(row);
+        }
+        const [headers = [], ...body] = rows.filter((line) => line.some((value) => String(value).trim()));
+        const keys = headers.map(normalizeKey);
+        return body.map((line, index) => normalizeRow(Object.fromEntries(keys.map((key, col) => [key, line[col] || ""])), index));
+      }
+
+      function parseHtmlTable(text) {
+        const doc = new DOMParser().parseFromString(text, "text/html");
+        const table = doc.querySelector("table");
+        if (!table) return [];
+        const matrix = [...table.querySelectorAll("tr")].map((tr) => [...tr.children].map((td) => td.textContent.trim()));
+        const [headers = [], ...body] = matrix;
+        const keys = headers.map(normalizeKey);
+        return body.map((line, index) => normalizeRow(Object.fromEntries(keys.map((key, col) => [key, line[col] || ""])), index));
+      }
+
+      async function importTermFile(file) {
+        if (!file) return [];
+        const name = file.name.toLowerCase();
+        if (name.endsWith(".csv")) {
+          return parseCsv(await file.text());
+        }
+        if (name.endsWith(".xls")) {
+          const text = await file.text();
+          return text.includes("<table") ? parseHtmlTable(text) : parseCsv(text);
+        }
+        if (name.endsWith(".xlsx")) {
+          const response = await fetch(`${API_BASE}/api/import-term-xlsx`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "X-Filename": file.name,
+            },
+            body: await file.arrayBuffer(),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.ok) {
+            throw new Error(data.error || "Excel 读取失败，请确认 Python API 已启动，或另存为 CSV 后上传。");
+          }
+          return data.rows.map(normalizeRow);
+        }
+        throw new Error("只支持 .xlsx / .xls / .csv");
+      }
+
+      function setMetadataFromBase(payload) {
+        if (!payload || typeof payload !== "object") return;
+        $("alignId").value = payload.align_id || $("alignId").value;
+        $("scene").value = payload.scene || $("scene").value;
+        $("domain").value = payload.domain || $("domain").value;
+        $("pair").value = payload.pair || $("pair").value;
+        $("segNo").value = payload.seg_no || $("segNo").value;
+        updateCounts();
+      }
+
+      function getBaseSentences() {
+        const list = state.basePayload?.sentences || state.basePayload?.items || [];
+        return Array.isArray(list) ? list : [];
+      }
+
+      function fillRowsFromBase(rows) {
+        const bySent = new Map(getBaseSentences().map((item) => [Number(item.sent_id), item]));
+        return rows.map((row) => {
+          const sentence = bySent.get(Number(row.sent_id));
+          return {
+            ...row,
+            src_text: row.src_text || sentence?.src?.text || "",
+            tgt_text: row.tgt_text || sentence?.tgt?.text || "",
+          };
+        });
+      }
+
+      function collectRows() {
+        state.rows = [...document.querySelectorAll("#termBody tr")].map((tr, index) => ({
+          id: tr.dataset.id || `${Date.now()}-${index}`,
+          keep: tr.querySelector("[data-field='keep']").checked,
+          sent_id: Number(tr.querySelector("[data-field='sent_id']").value) || index + 1,
+          src_text: tr.querySelector("[data-field='src_text']").value.trim(),
+          tgt_text: tr.querySelector("[data-field='tgt_text']").value.trim(),
+          term_src: tr.querySelector("[data-field='term_src']").value.trim(),
+          term_tgt: tr.querySelector("[data-field='term_tgt']").value.trim(),
+          type: tr.querySelector("[data-field='type']").value.trim() || "term",
+          note: tr.querySelector("[data-field='note']").value.trim(),
+        }));
+      }
+
+      function renderRows() {
+        const body = $("termBody");
+        body.innerHTML = "";
+        state.rows.forEach((row, index) => {
+          const tr = document.createElement("tr");
+          tr.dataset.id = row.id;
+          tr.innerHTML = `
+            <td><input data-field="keep" type="checkbox" ${row.keep ? "checked" : ""} /></td>
+            <td><input data-field="sent_id" value="${escapeHtml(row.sent_id)}" /></td>
+            <td><textarea data-field="src_text">${escapeHtml(row.src_text)}</textarea></td>
+            <td><textarea data-field="tgt_text">${escapeHtml(row.tgt_text)}</textarea></td>
+            <td><textarea data-field="term_src">${escapeHtml(row.term_src)}</textarea></td>
+            <td><textarea data-field="term_tgt">${escapeHtml(row.term_tgt)}</textarea></td>
+            <td>
+              <select data-field="type">
+                ${[...VALID_TYPES].map((type) => `<option value="${type}" ${row.type === type ? "selected" : ""}>${type}</option>`).join("")}
+              </select>
+            </td>
+            <td><textarea data-field="note">${escapeHtml(row.note)}</textarea></td>
+            <td>
+              <div class="row-tools">
+                <button type="button" data-action="copy">复</button>
+                <button type="button" data-action="delete" class="warn">删</button>
+              </div>
+            </td>
+          `;
+          tr.querySelector("[data-action='copy']").addEventListener("click", () => {
+            collectRows();
+            state.rows.splice(index + 1, 0, { ...state.rows[index], id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${index}` });
+            renderRows();
+            runQc();
+          });
+          tr.querySelector("[data-action='delete']").addEventListener("click", () => {
+            collectRows();
+            state.rows.splice(index, 1);
+            renderRows();
+            runQc();
+          });
+          body.appendChild(tr);
+        });
+        updateCounts();
+      }
+
+      function updateCounts() {
+        const kept = state.rows.filter((row) => row.keep);
+        $("rowCount").textContent = state.rows.length;
+        $("keepCount").textContent = kept.length;
+        $("sentenceCount").textContent = new Set(kept.map((row) => row.sent_id)).size;
+        $("issueCount").textContent = state.issues.length;
+        $("fileNameHint").textContent = finalJsonName();
+      }
+
+      function finalJsonName() {
+        return `${$("alignId").value || "alignment"}_final.json`;
+      }
+
+      function termExcelName() {
+        return `${$("alignId").value || "alignment"}_terms_review.xlsx`;
+      }
+
+      function fallbackTermExcelName() {
+        return `${$("alignId").value || "alignment"}_terms_review.xls`;
+      }
+
+      function csvEscape(value) {
+        const text = String(value ?? "");
+        return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      }
+
+      function rowsToExcelHtml() {
+        collectRows();
+        const headers = ["keep", ...REQUIRED_COLUMNS];
+        const headerHtml = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("");
+        const rowHtml = state.rows.map((row) => {
+          const values = [row.keep ? "TRUE" : "FALSE", row.sent_id, row.src_text, row.tgt_text, row.term_src, row.term_tgt, row.type, row.note];
+          return `<tr>${values.map((value) => `<td style="mso-number-format:'\\@';">${escapeHtml(value)}</td>`).join("")}</tr>`;
+        }).join("");
+        return `\ufeff<!doctype html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse}th,td{border:1px solid #d9e1f2;padding:6px 8px;vertical-align:top}th{background:#10244a;color:#fff}td{mso-number-format:"\\@"}</style></head><body><table><thead><tr>${headerHtml}</tr></thead><tbody>${rowHtml}</tbody></table></body></html>`;
+      }
+
+      function downloadText(filename, text, type = "text/plain;charset=utf-8") {
+        const blob = new Blob([text], { type });
+        downloadBlob(filename, blob);
+      }
+
+      function downloadBlob(filename, blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function termRowsForExport() {
+        collectRows();
+        return state.rows
+          .filter((row) => row.keep)
+          .map((row) => ({
+            sent_id: row.sent_id,
+            src_text: row.src_text,
+            tgt_text: row.tgt_text,
+            term_src: row.term_src,
+            term_tgt: row.term_tgt,
+            type: row.type,
+            note: row.note,
+          }));
+      }
+
+      async function downloadTermExcel() {
+        const rows = termRowsForExport();
+        try {
+          const response = await fetch(`${API_BASE}/api/export-xlsx`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rows }),
+          });
+          if (!response.ok) throw new Error("xlsx export failed");
+          const blob = new Blob([await response.arrayBuffer()], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          downloadBlob(termExcelName(), blob);
+        } catch {
+          downloadText(fallbackTermExcelName(), rowsToExcelHtml(), "application/vnd.ms-excel;charset=utf-8");
+        }
+      }
+
+      function runQc() {
+        collectRows();
+        const issues = [];
+        state.rows.forEach((row, index) => {
+          if (!row.keep) return;
+          if (!row.sent_id) issues.push({ level: "error", text: `第 ${index + 1} 行 sent_id 为空。` });
+          if (!row.term_src) issues.push({ level: "error", text: `第 ${index + 1} 行 term_src 为空。` });
+          if (!VALID_TYPES.has(row.type)) issues.push({ level: "error", text: `第 ${index + 1} 行 type 不在标准集合中。` });
+          if (row.term_src && row.src_text && !row.src_text.includes(row.term_src)) issues.push({ level: "warn", text: `第 ${index + 1} 行 term_src 不在 src_text 中。` });
+          if (row.term_tgt && row.tgt_text && !row.tgt_text.includes(row.term_tgt)) issues.push({ level: "warn", text: `第 ${index + 1} 行 term_tgt 不在 tgt_text 中。` });
+        });
+        if (!issues.length) issues.push({ level: "ok", text: "当前没有发现明显问题，可以生成 final JSON。" });
+        state.issues = issues.filter((item) => item.level !== "ok");
+        $("issues").innerHTML = issues.map((item) => `<div class="issue ${item.level === "error" ? "error" : item.level === "ok" ? "ok" : ""}">${escapeHtml(item.text)}</div>`).join("");
+        updateCounts();
+      }
+
+      function rangesOverlap(a, b) {
+        return a.start < b.end && b.start < a.end;
+      }
+
+      function annotateText(text, markers) {
+        const source = String(text || "");
+        const ranges = [];
+        const sorted = markers
+          .filter((item) => item.term && source.includes(item.term))
+          .sort((a, b) => b.term.length - a.term.length);
+        sorted.forEach((marker) => {
+          let start = source.indexOf(marker.term);
+          while (start !== -1) {
+            const range = { start, end: start + marker.term.length, marker };
+            if (!ranges.some((existing) => rangesOverlap(existing, range))) ranges.push(range);
+            start = source.indexOf(marker.term, start + marker.term.length);
+          }
+        });
+        ranges.sort((a, b) => a.start - b.start);
+        let output = "";
+        let cursor = 0;
+        ranges.forEach((range) => {
+          output += source.slice(cursor, range.start);
+          output += `[${source.slice(range.start, range.end)}]{${range.marker.type}}`;
+          cursor = range.end;
+        });
+        return output + source.slice(cursor);
+      }
+
+      function buildFallbackSentences(rows) {
+        const bySent = new Map();
+        rows.forEach((row) => {
+          if (!bySent.has(row.sent_id)) {
+            bySent.set(row.sent_id, {
+              sent_id: row.sent_id,
+              src: { start_ms: "", end_ms: "", text: row.src_text },
+              tgt: { start_ms: "", end_ms: "", text: row.tgt_text },
+              notes: "",
+            });
+          }
+        });
+        return [...bySent.values()].sort((a, b) => a.sent_id - b.sent_id);
+      }
+
+      function buildFinalJson() {
+        collectRows();
+        const kept = state.rows.filter((row) => row.keep);
+        const base = state.basePayload ? JSON.parse(JSON.stringify(state.basePayload)) : {
+          align_id: $("alignId").value.trim(),
+          scene: $("scene").value.trim(),
+          domain: $("domain").value.trim(),
+          pair: $("pair").value.trim(),
+          seg_no: $("segNo").value.trim(),
+          src_audio: "",
+          tgt_audio: "",
+          sentences: buildFallbackSentences(kept),
+          info: {},
+        };
+        base.align_id = $("alignId").value.trim() || base.align_id || "";
+        base.scene = $("scene").value.trim() || base.scene || "";
+        base.domain = $("domain").value.trim() || base.domain || "";
+        base.pair = $("pair").value.trim() || base.pair || "";
+        base.seg_no = $("segNo").value.trim() || base.seg_no || "";
+
+        const sentences = Array.isArray(base.sentences) ? base.sentences : buildFallbackSentences(kept);
+        const rowsBySent = new Map();
+        kept.forEach((row) => {
+          const list = rowsBySent.get(Number(row.sent_id)) || [];
+          list.push(row);
+          rowsBySent.set(Number(row.sent_id), list);
+        });
+
+        base.sentences = sentences.map((sentence) => {
+          const rows = rowsBySent.get(Number(sentence.sent_id)) || [];
+          const srcMarkers = rows.map((row) => ({ term: row.term_src, type: row.type }));
+          const tgtMarkers = rows.map((row) => ({ term: row.term_tgt, type: row.type }));
+          return {
+            ...sentence,
+            src: { ...sentence.src, text: annotateText(sentence.src?.text || rows[0]?.src_text || "", srcMarkers) },
+            tgt: { ...sentence.tgt, text: annotateText(sentence.tgt?.text || rows[0]?.tgt_text || "", tgtMarkers) },
+            notes: sentence.notes || "",
+          };
+        });
+
+        const today = new Date().toISOString().slice(0, 10);
+        base.info = {
+          ...(base.info || {}),
+          status: "term_final",
+          final_by: $("finalBy").value.trim(),
+          last_edit_time: today,
+          notes: $("finalNotes").value.trim() || base.info?.notes || "",
+        };
+        return base;
+      }
+
+      function validateFinal(payload) {
+        const results = [];
+        const sentences = Array.isArray(payload.sentences) ? payload.sentences : [];
+        const push = (ok, text) => results.push({ ok, text });
+        push(Boolean(payload.align_id), "align_id 已填写");
+        push(Boolean(payload.pair), "pair 已填写");
+        push(sentences.length > 0, "sentences 非空");
+        push(state.rows.filter((row) => row.keep).length > 0, "至少保留一个术语");
+        state.rows.filter((row) => row.keep).forEach((row, index) => {
+          push(Boolean(row.term_src), `术语第 ${index + 1} 行 term_src 非空`);
+          push(VALID_TYPES.has(row.type), `术语第 ${index + 1} 行 type 合法`);
+        });
+        return results;
+      }
+
+      function renderValidation(results) {
+        const checks = results.filter((item) => !item.ok);
+        const okCount = results.length - checks.length;
+        const summary = checks.length ? `CHECK · ${checks.length} 项需要处理，${okCount} 项通过。` : `OK · 全部通过，共 ${okCount} 项检查。`;
+        $("validationList").innerHTML = [`<li class="${checks.length ? "error" : "ok"}">${escapeHtml(summary)}</li>`]
+          .concat(checks.map((item) => `<li class="error">CHECK · ${escapeHtml(item.text)}</li>`))
+          .join("");
+      }
+
+      function generateJson() {
+        const payload = buildFinalJson();
+        state.currentJson = payload;
+        $("jsonPreview").textContent = JSON.stringify(payload, null, 2);
+        renderValidation(validateFinal(payload));
+        runQc();
+      }
+
+      function setFullscreen(next) {
+        const panel = $("reviewPanel");
+        const shouldOpen = typeof next === "boolean" ? next : !panel.classList.contains("review-fullscreen");
+        collectRows();
+        panel.classList.toggle("review-fullscreen", shouldOpen);
+        document.body.classList.toggle("sheet-fullscreen-lock", shouldOpen);
+        $("toggleFullscreen").textContent = shouldOpen ? "退出全屏" : "全屏编辑";
+        if (shouldOpen) window.setTimeout(() => panel.querySelector("[data-field='term_src']")?.focus(), 60);
+      }
+
+      async function loadBaseJson(file) {
+        if (!file) return;
+        state.basePayload = JSON.parse(await file.text());
+        setMetadataFromBase(state.basePayload);
+        state.rows = fillRowsFromBase(state.rows);
+        renderRows();
+        runQc();
+      }
+
+      async function loadTermFile(file) {
+        if (!file) return;
+        try {
+          state.rows = fillRowsFromBase(await importTermFile(file));
+          renderRows();
+          runQc();
+        } catch (error) {
+          $("issues").innerHTML = `<div class="issue error">${escapeHtml(error.message || "术语文件读取失败。")}</div>`;
+        }
+      }
+
+      function loadSample() {
+        state.basePayload = {
+          align_id: "zh-en_conf_eco_0001_seg001",
+          scene: "conf",
+          domain: "eco",
+          pair: "zh-en",
+          session_no: "0001",
+          seg_no: "seg001",
+          src_audio: "sample/zh_conf_eco_0001_seg001_src.wav",
+          tgt_audio: "sample/en_conf_eco_0001_seg001_tgt.wav",
+          sentences: [
+            {
+              sent_id: 1,
+              src: { start_ms: "", end_ms: 36000, text: "当前世界经济面临新质生产力转型压力。" },
+              tgt: { start_ms: "", end_ms: "", text: "The global economy is facing transformation pressures driven by new quality productive forces." },
+              notes: "",
+            },
+            {
+              sent_id: 2,
+              src: { start_ms: "", end_ms: "", text: "中国将持续推进改革开放。" },
+              tgt: { start_ms: "", end_ms: "", text: "China will continue to advance reform and opening-up." },
+              notes: "",
+            },
+          ],
+          info: { status: "align_qc", notes: "" },
+        };
+        setMetadataFromBase(state.basePayload);
+        state.rows = [
+          normalizeRow({ sent_id: 1, src_text: "当前世界经济面临新质生产力转型压力。", tgt_text: "The global economy is facing transformation pressures driven by new quality productive forces.", term_src: "世界经济", term_tgt: "global economy", type: "term", note: "" }),
+          normalizeRow({ sent_id: 1, src_text: "当前世界经济面临新质生产力转型压力。", tgt_text: "The global economy is facing transformation pressures driven by new quality productive forces.", term_src: "新质生产力", term_tgt: "new quality productive forces", type: "hot", note: "" }),
+          normalizeRow({ sent_id: 2, src_text: "中国将持续推进改革开放。", tgt_text: "China will continue to advance reform and opening-up.", term_src: "改革开放", term_tgt: "reform and opening-up", type: "cul", note: "" }),
+        ];
+        renderRows();
+        runQc();
+      }
+
+      $("baseJson").addEventListener("change", (event) => loadBaseJson(event.target.files[0]));
+      $("termFile").addEventListener("change", (event) => loadTermFile(event.target.files[0]));
+      $("loadSample").addEventListener("click", loadSample);
+      $("runQc").addEventListener("click", runQc);
+      $("addRow").addEventListener("click", () => {
+        collectRows();
+        state.rows.push(normalizeRow({}, state.rows.length));
+        renderRows();
+      });
+      $("toggleFullscreen").addEventListener("click", () => setFullscreen());
+      $("generateJson").addEventListener("click", generateJson);
+      $("downloadExcel").addEventListener("click", downloadTermExcel);
+      $("downloadExcelSheet").addEventListener("click", downloadTermExcel);
+      $("downloadExcelBottom").addEventListener("click", downloadTermExcel);
+      $("downloadJson").addEventListener("click", () => {
+        if (!state.currentJson) generateJson();
+        downloadText(finalJsonName(), JSON.stringify(state.currentJson, null, 2), "application/json;charset=utf-8");
+      });
+      $("downloadJsonBottom").addEventListener("click", () => {
+        if (!state.currentJson) generateJson();
+        downloadText(finalJsonName(), JSON.stringify(state.currentJson, null, 2), "application/json;charset=utf-8");
+      });
+      $("copyJson").addEventListener("click", async () => {
+        if (!state.currentJson) generateJson();
+        await navigator.clipboard.writeText(JSON.stringify(state.currentJson, null, 2));
+      });
+      ["alignId", "scene", "domain", "pair", "segNo"].forEach((id) => $(id).addEventListener("input", updateCounts));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && $("reviewPanel").classList.contains("review-fullscreen")) setFullscreen(false);
+      });
+
+      renderRows();
+      updateCounts();
+    </script>
+  </body>
+</html>

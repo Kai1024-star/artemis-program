@@ -1,0 +1,1402 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARTEMIS Moon Plan Flow</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, "Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #13223d;
+        background: #f5f8fc;
+        font-synthesis: none;
+        text-rendering: geometricPrecision;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(180deg, rgba(245, 248, 252, 0.96), rgba(255, 255, 255, 0.98)),
+          repeating-linear-gradient(90deg, rgba(23, 66, 124, 0.05) 0, rgba(23, 66, 124, 0.05) 1px, transparent 1px, transparent 84px);
+      }
+
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+
+      .page {
+        width: min(1540px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 22px 0 42px;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        min-height: 72px;
+        padding: 18px 22px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: linear-gradient(90deg, #060a12, #12284d);
+        color: #fff;
+        box-shadow: 0 18px 44px rgba(12, 30, 60, 0.2);
+      }
+
+      .brand {
+        margin: 0;
+        font-size: clamp(24px, 3vw, 42px);
+        line-height: 1;
+        font-weight: 950;
+        letter-spacing: 0.14em;
+      }
+
+      .topbar p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .topbar a {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin: 16px 0;
+      }
+
+      .step {
+        min-height: 76px;
+        border: 1px solid rgba(39, 77, 134, 0.16);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 13px;
+        box-shadow: 0 12px 32px rgba(43, 74, 120, 0.08);
+      }
+
+      .step span {
+        display: block;
+        color: #cf3d28;
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .step strong {
+        display: block;
+        margin-top: 6px;
+        font-size: 15px;
+        line-height: 1.25;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 360px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .panel {
+        min-width: 0;
+        border: 1px solid rgba(39, 77, 134, 0.16);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 16px 46px rgba(43, 74, 120, 0.1);
+      }
+
+      .side {
+        position: sticky;
+        top: 16px;
+        padding: 18px;
+      }
+
+      .stage {
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .section {
+        padding: 20px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        align-items: start;
+        margin-bottom: 16px;
+      }
+
+      .eyebrow {
+        margin: 0 0 6px;
+        color: #cf3d28;
+        font-size: 11px;
+        font-weight: 950;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h2,
+      h3 {
+        margin: 0;
+        color: #10244a;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 13px;
+      }
+
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      label,
+      .label {
+        color: #536b95;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid rgba(66, 103, 164, 0.26);
+        border-radius: 6px;
+        background: #fff;
+        color: #10244a;
+        padding: 10px 11px;
+      }
+
+      textarea {
+        min-height: 104px;
+        resize: vertical;
+        line-height: 1.5;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: rgba(19, 104, 214, 0.72);
+        box-shadow: 0 0 0 4px rgba(19, 104, 214, 0.08);
+        outline: none;
+      }
+
+      .drop-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .drop {
+        display: grid;
+        gap: 8px;
+        min-height: 128px;
+        border: 1px dashed rgba(19, 104, 214, 0.42);
+        border-radius: 8px;
+        background: #f8fbff;
+        padding: 15px;
+      }
+
+      .drop strong {
+        font-size: 16px;
+      }
+
+      .drop span {
+        color: #5c7196;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .actions,
+      .table-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      button {
+        min-height: 42px;
+        border: 0;
+        border-radius: 6px;
+        background: #10244a;
+        color: #fff;
+        cursor: pointer;
+        padding: 0 14px;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      button.secondary {
+        border: 1px solid rgba(16, 36, 74, 0.18);
+        background: #fff;
+        color: #10244a;
+      }
+
+      button.warn {
+        background: #cf3d28;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        background: #f8fbff;
+        padding: 12px;
+      }
+
+      .metric span {
+        display: block;
+        color: #5c7196;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .metric strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 22px;
+      }
+
+      .issues {
+        display: grid;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .issue {
+        border-left: 4px solid #d99f1f;
+        background: #fff8e8;
+        padding: 10px 12px;
+        color: #443015;
+        line-height: 1.45;
+      }
+
+      .issue.error {
+        border-left-color: #cf3d28;
+        background: #fff1ef;
+        color: #5b1f17;
+      }
+
+      .issue.ok {
+        border-left-color: #1f9c62;
+        background: #edf9f3;
+        color: #145037;
+      }
+
+      .table-wrap {
+        overflow: auto;
+        max-width: 100%;
+        max-height: 560px;
+        border: 1px solid rgba(39, 77, 134, 0.14);
+      }
+
+      body.sheet-fullscreen-lock {
+        overflow: hidden;
+      }
+
+      .align-fullscreen {
+        position: fixed;
+        inset: 14px;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-color: rgba(16, 36, 74, 0.28);
+        background: #ffffff;
+        box-shadow: 0 24px 80px rgba(10, 24, 48, 0.28);
+      }
+
+      .align-fullscreen .section-head {
+        flex: 0 0 auto;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .align-fullscreen .table-wrap {
+        flex: 1 1 auto;
+        max-height: none;
+        min-height: 0;
+      }
+
+      .align-fullscreen table {
+        min-width: 1760px;
+      }
+
+      .align-fullscreen td textarea {
+        min-height: 86px;
+      }
+
+      .fullscreen-hint {
+        display: none;
+        color: #5f7197;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .align-fullscreen .fullscreen-hint {
+        display: inline;
+      }
+
+      table {
+        width: 100%;
+        min-width: 1320px;
+        border-collapse: collapse;
+        background: #fff;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #10244a;
+        color: #fff;
+        padding: 10px;
+        font-size: 12px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      td {
+        border-top: 1px solid rgba(39, 77, 134, 0.12);
+        padding: 0;
+        vertical-align: top;
+      }
+
+      td input,
+      td textarea,
+      td select {
+        min-height: 42px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      td input.time-input {
+        width: 100%;
+        min-width: 318px;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 15px;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      td textarea {
+        min-height: 62px;
+      }
+
+      .row-tools {
+        display: flex;
+        gap: 5px;
+        padding: 7px;
+      }
+
+      .row-tools button {
+        min-height: 30px;
+        padding: 0 8px;
+        font-size: 11px;
+      }
+
+      .preview {
+        min-height: 420px;
+        max-height: 620px;
+        overflow: auto;
+        margin: 0;
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        background: #202b3d;
+        color: #dce8f8;
+        padding: 16px;
+        font-size: 13px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      .json-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 14px;
+      }
+
+      .hint {
+        color: #5c7196;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .delivery-note {
+        margin: 0 0 14px;
+        border-left: 4px solid #1f9c62;
+        background: #edf9f3;
+        padding: 11px 13px;
+        color: #145037;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .small-list {
+        display: grid;
+        gap: 8px;
+        max-height: 320px;
+        overflow: auto;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .small-list li {
+        border: 1px solid rgba(39, 77, 134, 0.14);
+        background: #f8fbff;
+        padding: 10px;
+        color: #24416c;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .small-list li.validation-summary {
+        border-left: 4px solid #1f9c62;
+        background: #edf9f3;
+        color: #145037;
+      }
+
+      .small-list li.validation-check {
+        border-left: 4px solid #cf3d28;
+        background: #fff1ef;
+        color: #5b1f17;
+      }
+
+      .footer-note {
+        margin-top: 16px;
+        color: #61779e;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 1080px) {
+        .layout,
+        .json-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .side {
+          position: static;
+        }
+
+        .steps,
+        .status-grid,
+        .drop-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div>
+          <h1 class="brand">ARTEMIS MOON PLAN</h1>
+          <p>subtitle alignment delivery workflow</p>
+        </div>
+        <a href="http://127.0.0.1:5173/" data-console-link>Back to Console</a>
+      </header>
+      <script>
+        const consoleLink = document.querySelector("[data-console-link]");
+        if (consoleLink && window.location.protocol !== "file:") {
+          consoleLink.href = "/";
+        }
+      </script>
+
+      <nav class="steps" aria-label="Workflow steps">
+        <div class="step"><span>01 Upload</span><strong>SRT 与项目信息</strong></div>
+        <div class="step"><span>02 QC</span><strong>检查时间轴与空行</strong></div>
+        <div class="step"><span>03 Align</span><strong>在线表格对齐</strong></div>
+        <div class="step"><span>04 JSON</span><strong>生成 final JSON</strong></div>
+        <div class="step"><span>05 Validate</span><strong>格式验证与交付</strong></div>
+      </nav>
+
+      <main class="layout">
+        <aside class="panel side">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Mission Metadata</p>
+              <h2>交付信息</h2>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="alignId">Align ID</label>
+            <input id="alignId" value="ja-zh_tour_attr_0001_seg001" />
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="scene">Scene</label>
+              <select id="scene">
+                <option value="conf">conf</option>
+                <option value="news">news</option>
+                <option value="interview">interview</option>
+                <option value="lecture">lecture</option>
+                <option value="tour">tour</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="domain">Domain</label>
+              <select id="domain">
+                <option value="attr">attr</option>
+                <option value="eco">eco</option>
+                <option value="cul">cul</option>
+                <option value="edu">edu</option>
+                <option value="org">org</option>
+                <option value="pol">pol</option>
+                <option value="soc">soc</option>
+                <option value="tech">tech</option>
+                <option value="term">term</option>
+              </select>
+            </div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="pair">Pair</label>
+              <input id="pair" value="ja-zh" />
+            </div>
+            <div class="field">
+              <label for="segNo">Seg No</label>
+              <input id="segNo" value="seg001" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="alignBy">Align By</label>
+            <input id="alignBy" value="teacher_A" />
+          </div>
+          <div class="field">
+            <label for="missionNotes">Info Notes</label>
+            <textarea id="missionNotes" placeholder="可以写本段未解决的问题、加译句说明等。"></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="generateJson">生成 JSON</button>
+            <button type="button" id="validateJson" class="secondary">验证</button>
+            <button type="button" id="downloadExcel" class="secondary">下载 Excel</button>
+            <button type="button" id="downloadJson" class="secondary">下载交付 JSON</button>
+          </div>
+          <p class="footer-note">建议命名：<strong id="fileNameHint">ja-zh_tour_attr_0001_seg001_align.qc.json</strong></p>
+        </aside>
+
+        <section class="stage">
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Input Bay</p>
+                <h2>SRT 上传与合并</h2>
+              </div>
+              <div class="actions">
+                <button type="button" id="mergeSrt">合并成表格</button>
+                <button type="button" id="loadSample" class="secondary">载入样例</button>
+              </div>
+            </div>
+
+            <div class="drop-grid">
+              <label class="drop" for="srcSrt">
+                <strong>源语言 SRT</strong>
+                <span>上传 asr_qc 后的源语言字幕文件。网页会解析序号、时间轴和文本。</span>
+                <input id="srcSrt" type="file" accept=".srt,text/plain" />
+              </label>
+              <label class="drop" for="tgtSrt">
+                <strong>目标语言 SRT</strong>
+                <span>上传 asr_qc 后的译文字幕文件。允许目标语为空行，但最终会被 QC 标出来。</span>
+                <input id="tgtSrt" type="file" accept=".srt,text/plain" />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">QC Radar</p>
+                <h2>自动检查</h2>
+              </div>
+              <button type="button" id="runQc" class="secondary">重新检查</button>
+            </div>
+            <div class="status-grid">
+              <div class="metric"><span>Source Cues</span><strong id="srcCount">0</strong></div>
+              <div class="metric"><span>Target Cues</span><strong id="tgtCount">0</strong></div>
+              <div class="metric"><span>Rows</span><strong id="rowCount">0</strong></div>
+              <div class="metric"><span>Issues</span><strong id="issueCount">0</strong></div>
+            </div>
+            <div id="issues" class="issues" aria-live="polite"></div>
+          </section>
+
+          <section class="panel section" id="alignPanel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Align Sheet</p>
+                <h2>在线对齐表格</h2>
+                <span class="fullscreen-hint">Esc 退出全屏编辑</span>
+              </div>
+              <div class="table-actions">
+                <button type="button" id="addRow" class="secondary">新增行</button>
+                <button type="button" id="fixOverlaps" class="secondary">自动修复轻微重叠</button>
+                <button type="button" id="toggleSheetFullscreen" class="secondary">全屏编辑</button>
+                <button type="button" id="downloadExcelSheet" class="secondary">下载 Excel</button>
+                <button type="button" id="downloadCsv" class="secondary">下载 CSV</button>
+                <label>
+                  <input id="csvImport" type="file" accept=".csv,text/csv" hidden />
+                  <button type="button" id="importCsv" class="secondary">导入 CSV</button>
+                </label>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 72px;">ID</th>
+                    <th style="width: 340px;">src_time</th>
+                    <th>src_text</th>
+                    <th style="width: 340px;">tgt_time</th>
+                    <th>tgt_text</th>
+                    <th style="width: 220px;">notes</th>
+                    <th style="width: 152px;">tools</th>
+                  </tr>
+                </thead>
+                <tbody id="alignBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Delivery JSON</p>
+                <h2>交付 JSON 生成器</h2>
+              </div>
+              <div class="actions">
+                <button type="button" id="downloadExcelBottom" class="secondary">下载 Excel</button>
+                <button type="button" id="downloadJsonBottom" class="secondary">下载交付 JSON</button>
+                <button type="button" id="copyJson" class="secondary">复制</button>
+                <button type="button" id="downloadReport" class="secondary">下载 QC 报告（非交付）</button>
+              </div>
+            </div>
+            <p class="delivery-note">
+              交付文件是 <strong id="deliveryFileHint">ja-zh_tour_attr_0001_seg001_align.qc.json</strong>。
+              QC 报告只记录检查结果，不是最终交付 JSON。
+            </p>
+            <div class="json-grid">
+              <pre id="jsonPreview" class="preview">{
+  "status": "等待生成交付 JSON"
+}</pre>
+              <div>
+                <h3>验证结果</h3>
+                <ul id="validationList" class="small-list">
+                  <li>上传 SRT 或编辑表格后，点击“生成 JSON”。</li>
+                </ul>
+                <p class="hint">规则：漏译行目标时间与译文应为空；误译或病句保留目标时间和修订译文，并在 notes 中说明；notes 会进入每个 item。</p>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const state = {
+        srcCues: [],
+        tgtCues: [],
+        rows: [],
+        issues: [],
+        currentJson: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const pad = (value, size = 2) => String(value).padStart(size, "0");
+
+      function parseTimecode(value) {
+        if (!value) return null;
+        const normalized = value.trim().replace(".", ",");
+        const match = normalized.match(/^(\d{2}):(\d{2}):(\d{2}),(\d{3})$/);
+        if (!match) return null;
+        const [, hh, mm, ss, ms] = match;
+        return Number(hh) * 3600000 + Number(mm) * 60000 + Number(ss) * 1000 + Number(ms);
+      }
+
+      function formatMs(ms) {
+        if (ms === "" || ms === null || Number.isNaN(Number(ms))) return "";
+        const value = Math.max(0, Number(ms));
+        const hh = Math.floor(value / 3600000);
+        const mm = Math.floor((value % 3600000) / 60000);
+        const ss = Math.floor((value % 60000) / 1000);
+        const mmm = Math.floor(value % 1000);
+        return `${pad(hh)}:${pad(mm)}:${pad(ss)},${pad(mmm, 3)}`;
+      }
+
+      function parseRange(value) {
+        const raw = (value || "").trim();
+        if (!raw) return { startMs: "", endMs: "", label: "" };
+        const [start, end] = raw.split(/\s*-->\s*/);
+        return {
+          startMs: parseTimecode(start),
+          endMs: parseTimecode(end),
+          label: raw,
+        };
+      }
+
+      function formatRange(startMs, endMs) {
+        if (startMs === "" || endMs === "" || startMs === null || endMs === null) return "";
+        return `${formatMs(startMs)} --> ${formatMs(endMs)}`;
+      }
+
+      function parseSrt(text) {
+        const blocks = text.replace(/\r/g, "").trim().split(/\n{2,}/).filter(Boolean);
+        return blocks.map((block, index) => {
+          const lines = block.split("\n");
+          const idLine = /^\d+$/.test(lines[0]?.trim()) ? lines.shift().trim() : String(index + 1);
+          const timeLineIndex = lines.findIndex((line) => line.includes("-->"));
+          const timeLine = timeLineIndex >= 0 ? lines.splice(timeLineIndex, 1)[0].trim() : "";
+          const [startRaw, endRaw] = timeLine.split(/\s*-->\s*/);
+          return {
+            id: Number(idLine) || index + 1,
+            startMs: parseTimecode(startRaw),
+            endMs: parseTimecode(endRaw),
+            text: lines.join(" ").replace(/\s+/g, " ").trim(),
+            rawTime: timeLine,
+          };
+        });
+      }
+
+      async function readFile(file) {
+        if (!file) return "";
+        return await file.text();
+      }
+
+      function parseDeliveryName(fileName) {
+        const base = String(fileName || "").split(/[\\/]/).pop() || "";
+        const match = base.match(/^([a-z]{2,3})_([a-z]+)_([a-z]+)_([0-9]{4})_(seg[0-9]+)_(src|tgt)(?:\.|_)/i);
+        if (!match) return null;
+        return {
+          lang: match[1].toLowerCase(),
+          scene: match[2].toLowerCase(),
+          domain: match[3].toLowerCase(),
+          unitNo: match[4],
+          segNo: match[5].toLowerCase(),
+          side: match[6].toLowerCase(),
+        };
+      }
+
+      function setSelectValue(select, value) {
+        if (!value) return;
+        const normalized = value.toLowerCase();
+        if (![...select.options].some((option) => option.value === normalized)) {
+          select.add(new Option(normalized, normalized));
+        }
+        select.value = normalized;
+      }
+
+      function inferMetadataFromFiles() {
+        const srcMeta = parseDeliveryName($("srcSrt").files[0]?.name);
+        const tgtMeta = parseDeliveryName($("tgtSrt").files[0]?.name);
+        const main = srcMeta || tgtMeta;
+        if (!main) {
+          updateCounts();
+          return;
+        }
+
+        const pair = srcMeta && tgtMeta ? `${srcMeta.lang}-${tgtMeta.lang}` : $("pair").value.trim();
+        const scene = srcMeta?.scene || tgtMeta?.scene || "";
+        const domain = srcMeta?.domain || tgtMeta?.domain || "";
+        const unitNo = srcMeta?.unitNo || tgtMeta?.unitNo || "";
+        const segNo = srcMeta?.segNo || tgtMeta?.segNo || "";
+
+        if (pair) $("pair").value = pair;
+        if (scene) setSelectValue($("scene"), scene);
+        if (domain) setSelectValue($("domain"), domain);
+        if (segNo) $("segNo").value = segNo;
+        if (pair && scene && domain && unitNo && segNo) {
+          $("alignId").value = `${pair}_${scene}_${domain}_${unitNo}_${segNo}`;
+        }
+        updateCounts();
+      }
+
+      function makeRows(srcCues, tgtCues) {
+        const total = Math.max(srcCues.length, tgtCues.length);
+        return Array.from({ length: total }, (_, index) => {
+          const src = srcCues[index] || {};
+          const tgt = tgtCues[index] || {};
+          return {
+            sentId: index + 1,
+            srcTime: formatRange(src.startMs, src.endMs),
+            srcText: src.text || "",
+            tgtTime: formatRange(tgt.startMs, tgt.endMs),
+            tgtText: tgt.text || "",
+            notes: "",
+          };
+        });
+      }
+
+      function csvEscape(value) {
+        const text = String(value ?? "");
+        return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      }
+
+      function rowsToCsv() {
+        const headers = ["src_time", "src_text", "tgt_time", "tgt_text", "notes"];
+        const lines = state.rows.map((row) => [
+          row.srcTime,
+          row.srcText,
+          row.tgtTime,
+          row.tgtText,
+          row.notes,
+        ].map(csvEscape).join(","));
+        return [headers.join(","), ...lines].join("\n");
+      }
+
+      function rowsToExcelHtml() {
+        const headers = ["src_time", "src_text", "tgt_time", "tgt_text", "notes"];
+        const headerHtml = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("");
+        const rowHtml = state.rows.map((row) => {
+          const cells = [row.srcTime, row.srcText, row.tgtTime, row.tgtText, row.notes]
+            .map((value) => `<td style="mso-number-format:'\\@';">${escapeHtml(value)}</td>`)
+            .join("");
+          return `<tr>${cells}</tr>`;
+        }).join("");
+        return `\ufeff<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      table { border-collapse: collapse; }
+      th, td { border: 1px solid #d9e1f2; padding: 6px 8px; vertical-align: top; }
+      th { background: #10244a; color: #ffffff; font-weight: bold; }
+      td { mso-number-format: "\\@"; }
+    </style>
+  </head>
+  <body>
+    <table>
+      <thead><tr>${headerHtml}</tr></thead>
+      <tbody>${rowHtml}</tbody>
+    </table>
+  </body>
+</html>`;
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let cell = "";
+        let row = [];
+        let quoted = false;
+        for (let index = 0; index < text.length; index += 1) {
+          const ch = text[index];
+          const next = text[index + 1];
+          if (quoted && ch === '"' && next === '"') {
+            cell += '"';
+            index += 1;
+          } else if (ch === '"') {
+            quoted = !quoted;
+          } else if (!quoted && ch === ",") {
+            row.push(cell);
+            cell = "";
+          } else if (!quoted && (ch === "\n" || ch === "\r")) {
+            if (ch === "\r" && next === "\n") index += 1;
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = "";
+          } else {
+            cell += ch;
+          }
+        }
+        if (cell || row.length) {
+          row.push(cell);
+          rows.push(row);
+        }
+        const [, ...body] = rows;
+        return body.filter((line) => line.some(Boolean)).map((line, index) => ({
+          sentId: index + 1,
+          srcTime: line[0] || "",
+          srcText: line[1] || "",
+          tgtTime: line[2] || "",
+          tgtText: line[3] || "",
+          notes: line[4] || "",
+        }));
+      }
+
+      function downloadText(filename, text, type = "text/plain;charset=utf-8") {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function collectRows() {
+        state.rows = Array.from(document.querySelectorAll("#alignBody tr")).map((tr, index) => ({
+          sentId: index + 1,
+          srcTime: tr.querySelector("[data-field='srcTime']").value.trim(),
+          srcText: tr.querySelector("[data-field='srcText']").value.trim(),
+          tgtTime: tr.querySelector("[data-field='tgtTime']").value.trim(),
+          tgtText: tr.querySelector("[data-field='tgtText']").value.trim(),
+          notes: tr.querySelector("[data-field='notes']").value.trim(),
+        }));
+      }
+
+      function renderRows() {
+        const body = $("alignBody");
+        body.innerHTML = "";
+        state.rows.forEach((row, index) => {
+          row.sentId = index + 1;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><input value="${row.sentId}" readonly /></td>
+            <td><input class="time-input" data-field="srcTime" value="${escapeHtml(row.srcTime)}" title="${escapeHtml(row.srcTime)}" /></td>
+            <td><textarea data-field="srcText">${escapeHtml(row.srcText)}</textarea></td>
+            <td><input class="time-input" data-field="tgtTime" value="${escapeHtml(row.tgtTime)}" title="${escapeHtml(row.tgtTime)}" /></td>
+            <td><textarea data-field="tgtText">${escapeHtml(row.tgtText)}</textarea></td>
+            <td><textarea data-field="notes">${escapeHtml(row.notes)}</textarea></td>
+            <td>
+              <div class="row-tools">
+                <button type="button" data-action="insert">+</button>
+                <button type="button" data-action="blank">漏译</button>
+                <button type="button" data-action="delete" class="warn">删</button>
+              </div>
+            </td>
+          `;
+          tr.querySelector("[data-action='insert']").addEventListener("click", () => {
+            collectRows();
+            state.rows.splice(index + 1, 0, {
+              sentId: index + 2,
+              srcTime: "",
+              srcText: "",
+              tgtTime: "",
+              tgtText: "",
+              notes: "手动插入空行",
+            });
+            renderRows();
+            runQc();
+          });
+          tr.querySelector("[data-action='blank']").addEventListener("click", () => {
+            tr.querySelector("[data-field='tgtTime']").value = "";
+            tr.querySelector("[data-field='tgtText']").value = "";
+            tr.querySelector("[data-field='notes']").value ||= "漏译：目标语为空";
+            collectRows();
+            runQc();
+          });
+          tr.querySelector("[data-action='delete']").addEventListener("click", () => {
+            collectRows();
+            state.rows.splice(index, 1);
+            renderRows();
+            runQc();
+          });
+          body.appendChild(tr);
+        });
+        updateCounts();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function updateCounts() {
+        $("srcCount").textContent = state.srcCues.length;
+        $("tgtCount").textContent = state.tgtCues.length;
+        $("rowCount").textContent = state.rows.length;
+        $("issueCount").textContent = state.issues.length;
+        $("fileNameHint").textContent = deliveryJsonName();
+        $("deliveryFileHint").textContent = deliveryJsonName();
+      }
+
+      function deliveryJsonName() {
+        return `${$("alignId").value || "alignment"}_align.qc.json`;
+      }
+
+      function alignExcelName() {
+        return `${$("alignId").value || "alignment"}_align.xls`;
+      }
+
+      function downloadExcelFile() {
+        collectRows();
+        downloadText(alignExcelName(), rowsToExcelHtml(), "application/vnd.ms-excel;charset=utf-8");
+      }
+
+      function inspectCueList(cues, label) {
+        const issues = [];
+        cues.forEach((cue, index) => {
+          if (cue.startMs === null || cue.endMs === null) {
+            issues.push({ level: "error", text: `${label} 第 ${index + 1} 条时间轴无法解析。` });
+          } else {
+            if (cue.endMs < cue.startMs) issues.push({ level: "error", text: `${label} 第 ${index + 1} 条结束时间早于开始时间。` });
+            if (index > 0 && cues[index - 1].endMs > cue.startMs) issues.push({ level: "warn", text: `${label} 第 ${index + 1} 条和上一条时间轴重叠。` });
+            if (cue.endMs - cue.startMs < 250) issues.push({ level: "warn", text: `${label} 第 ${index + 1} 条时长小于 250ms。` });
+          }
+          if (!cue.text) issues.push({ level: "warn", text: `${label} 第 ${index + 1} 条文本为空。` });
+          if (/未翻译/i.test(cue.text)) issues.push({ level: "error", text: `${label} 第 ${index + 1} 条出现“未翻译”，交付前应处理。` });
+        });
+        return issues;
+      }
+
+      function inspectRowOverlaps(rows, field, label) {
+        const issues = [];
+        let previous = null;
+        rows.forEach((row) => {
+          const range = parseRange(row[field]);
+          if (range.startMs === null || range.endMs === null) return;
+          if (previous && previous.endMs > range.startMs) {
+            const overlap = previous.endMs - range.startMs;
+            issues.push({
+              level: overlap <= 1000 ? "warn" : "error",
+              text: `${label} 第 ${row.sentId} 行和上一条重叠 ${overlap}ms。`,
+            });
+          }
+          previous = { endMs: range.endMs, sentId: row.sentId };
+        });
+        return issues;
+      }
+
+      function appendNote(current, addition) {
+        const value = String(current || "").trim();
+        return value ? `${value}；${addition}` : addition;
+      }
+
+      function fixSmallOverlaps() {
+        collectRows();
+        let fixed = 0;
+        const fields = [
+          { key: "srcTime", label: "源语言" },
+          { key: "tgtTime", label: "目标语言" },
+        ];
+
+        fields.forEach(({ key, label }) => {
+          let previous = null;
+          state.rows.forEach((row) => {
+            const range = parseRange(row[key]);
+            if (range.startMs === null || range.endMs === null) return;
+            if (previous && previous.endMs > range.startMs) {
+              const overlap = previous.endMs - range.startMs;
+              if (overlap <= 1000 && previous.endMs < range.endMs) {
+                row[key] = formatRange(previous.endMs, range.endMs);
+                row.notes = appendNote(row.notes, `${label}轻微时间轴重叠已自动修复：开始时间 +${overlap}ms`);
+                fixed += 1;
+              }
+            }
+            const updatedRange = parseRange(row[key]);
+            if (updatedRange.endMs !== null) {
+              previous = { endMs: updatedRange.endMs, sentId: row.sentId };
+            }
+          });
+        });
+
+        renderRows();
+        runQc();
+        if (fixed === 0) {
+          renderIssues([{ level: "ok", text: "没有发现 1000ms 以内、可安全自动修复的重叠。" }, ...state.issues]);
+        } else {
+          renderIssues([{ level: "ok", text: `已自动修复 ${fixed} 处轻微重叠，并写入 notes。` }, ...state.issues]);
+        }
+      }
+
+      function runQc() {
+        collectRows();
+        const issues = [
+          ...inspectCueList(state.srcCues, "源语言"),
+          ...inspectCueList(state.tgtCues, "目标语言"),
+        ];
+        if (state.srcCues.length && state.tgtCues.length && state.srcCues.length !== state.tgtCues.length) {
+          issues.push({ level: "warn", text: `源语言 ${state.srcCues.length} 条，目标语言 ${state.tgtCues.length} 条，已按较长一侧合并。` });
+        }
+        issues.push(...inspectRowOverlaps(state.rows, "srcTime", "源语言表格"));
+        issues.push(...inspectRowOverlaps(state.rows, "tgtTime", "目标语言表格"));
+        state.rows.forEach((row) => {
+          const srcRange = parseRange(row.srcTime);
+          const tgtRange = parseRange(row.tgtTime);
+          if (!row.srcText) issues.push({ level: "warn", text: `第 ${row.sentId} 行源文本为空。` });
+          if (!row.tgtText && row.tgtTime) issues.push({ level: "warn", text: `第 ${row.sentId} 行目标时间存在但目标文本为空，若为漏译建议清空目标时间。` });
+          if (row.tgtText && !row.tgtTime) issues.push({ level: "warn", text: `第 ${row.sentId} 行目标文本存在但目标时间为空。` });
+          if (row.tgtTime && (tgtRange.startMs === null || tgtRange.endMs === null)) issues.push({ level: "error", text: `第 ${row.sentId} 行目标时间格式无法解析。` });
+          if (row.srcTime && (srcRange.startMs === null || srcRange.endMs === null)) issues.push({ level: "error", text: `第 ${row.sentId} 行源时间格式无法解析。` });
+          if (/漏译/.test(row.notes) && (row.tgtText || row.tgtTime)) issues.push({ level: "warn", text: `第 ${row.sentId} 行 notes 标了漏译，但目标列未清空。` });
+          if (/未翻译/i.test(row.tgtText)) issues.push({ level: "error", text: `第 ${row.sentId} 行目标文本仍有“未翻译”。` });
+        });
+        if (!issues.length) issues.push({ level: "ok", text: "当前没有发现明显格式问题，可以生成 JSON。" });
+        state.issues = issues.filter((item) => item.level !== "ok");
+        renderIssues(issues);
+        updateCounts();
+      }
+
+      function renderIssues(issues) {
+        $("issues").innerHTML = issues.map((issue) => (
+          `<div class="issue ${issue.level === "error" ? "error" : issue.level === "ok" ? "ok" : ""}">${escapeHtml(issue.text)}</div>`
+        )).join("");
+      }
+
+      function buildJson() {
+        collectRows();
+        const today = new Date().toISOString().slice(0, 10);
+        const srcMeta = parseDeliveryName($("srcSrt").files[0]?.name);
+        const tgtMeta = parseDeliveryName($("tgtSrt").files[0]?.name);
+        const sentences = state.rows.map((row) => {
+          const src = parseRange(row.srcTime);
+          const tgt = parseRange(row.tgtTime);
+          return {
+            sent_id: row.sentId,
+            src: {
+              start_ms: src.startMs === null ? "" : src.startMs,
+              end_ms: src.endMs === null ? "" : src.endMs,
+              text: row.srcText,
+            },
+            tgt: {
+              start_ms: tgt.startMs === null ? "" : tgt.startMs,
+              end_ms: tgt.endMs === null ? "" : tgt.endMs,
+              text: row.tgtText,
+            },
+            notes: row.notes,
+          };
+        });
+        const sourceAudio = srcMeta
+          ? `sample/${srcMeta.lang}_${srcMeta.scene}_${srcMeta.domain}_${srcMeta.unitNo}_${srcMeta.segNo}_src.wav`
+          : "";
+        const targetAudio = tgtMeta
+          ? `sample/${tgtMeta.lang}_${tgtMeta.scene}_${tgtMeta.domain}_${tgtMeta.unitNo}_${tgtMeta.segNo}_tgt.wav`
+          : "";
+        return {
+          align_id: $("alignId").value.trim(),
+          scene: $("scene").value,
+          domain: $("domain").value,
+          pair: $("pair").value.trim(),
+          seg_no: $("segNo").value.trim(),
+          src_audio: sourceAudio,
+          tgt_audio: targetAudio,
+          sentences,
+          info: {
+            align_by: $("alignBy").value.trim(),
+            align_time: today,
+            notes: $("missionNotes").value.trim(),
+          },
+        };
+      }
+
+      function validatePayload(payload) {
+        const results = [];
+        const push = (ok, text) => results.push({ ok, text });
+        const sentences = Array.isArray(payload.sentences) ? payload.sentences : [];
+        push(Boolean(payload.align_id), "align_id 已填写");
+        push(Boolean(payload.pair), "pair 已填写");
+        push(!payload.align_id.includes("econ"), "align_id 不使用 econ，经济类应使用 eco");
+        push(payload.domain !== "econ", "domain 不使用 econ，经济类应使用 eco");
+        push(sentences.length > 0, "sentences 非空");
+        sentences.forEach((item, index) => {
+          const prefix = `第 ${index + 1} 行`;
+          push(item.sent_id === index + 1, `${prefix} sent_id 连续`);
+          push(Boolean(item.src.text), `${prefix} 源文本非空`);
+          push(item.src.start_ms === "" || typeof item.src.start_ms === "number", `${prefix} src.start_ms 格式正确`);
+          push(item.src.end_ms === "" || typeof item.src.end_ms === "number", `${prefix} src.end_ms 格式正确`);
+          push(item.tgt.start_ms === "" || typeof item.tgt.start_ms === "number", `${prefix} tgt.start_ms 格式正确`);
+          push(item.tgt.end_ms === "" || typeof item.tgt.end_ms === "number", `${prefix} tgt.end_ms 格式正确`);
+          if (!item.tgt.text) push(item.tgt.start_ms === "" && item.tgt.end_ms === "", `${prefix} 目标文本为空时目标时间也为空`);
+          push(!/未翻译/i.test(item.tgt.text), `${prefix} 目标文本不含“未翻译”占位`);
+          if (/漏译/.test(item.notes)) push(!item.tgt.text && item.tgt.start_ms === "" && item.tgt.end_ms === "", `${prefix} notes 标为漏译时目标列为空`);
+        });
+        return results;
+      }
+
+      function renderValidation(results) {
+        const checks = results.filter((item) => !item.ok);
+        const okCount = results.length - checks.length;
+        const summary = checks.length
+          ? `CHECK · ${checks.length} 项需要处理，${okCount} 项通过。`
+          : `OK · 全部通过，共 ${okCount} 项检查。`;
+        const items = [`<li class="validation-summary">${escapeHtml(summary)}</li>`].concat(
+          checks.map((item) => `<li class="validation-check">CHECK · ${escapeHtml(item.text)}</li>`),
+        );
+        $("validationList").innerHTML = items.join("");
+      }
+
+      function generateJson() {
+        const payload = buildJson();
+        state.currentJson = payload;
+        $("jsonPreview").textContent = JSON.stringify(payload, null, 2);
+        renderValidation(validatePayload(payload));
+        runQc();
+      }
+
+      function setSheetFullscreen(next) {
+        const panel = $("alignPanel");
+        const shouldOpen = typeof next === "boolean" ? next : !panel.classList.contains("align-fullscreen");
+        collectRows();
+        panel.classList.toggle("align-fullscreen", shouldOpen);
+        document.body.classList.toggle("sheet-fullscreen-lock", shouldOpen);
+        $("toggleSheetFullscreen").textContent = shouldOpen ? "退出全屏" : "全屏编辑";
+        if (shouldOpen) {
+          panel.scrollIntoView({ block: "nearest" });
+          window.setTimeout(() => panel.querySelector("[data-field='srcTime']")?.focus(), 60);
+        }
+      }
+
+      async function mergeSrt() {
+        inferMetadataFromFiles();
+        const srcText = await readFile($("srcSrt").files[0]);
+        const tgtText = await readFile($("tgtSrt").files[0]);
+        state.srcCues = srcText ? parseSrt(srcText) : [];
+        state.tgtCues = tgtText ? parseSrt(tgtText) : [];
+        state.rows = makeRows(state.srcCues, state.tgtCues);
+        renderRows();
+        runQc();
+      }
+
+      function loadSample() {
+        $("alignId").value = "ja-zh_tour_attr_0001_seg001";
+        setSelectValue($("scene"), "tour");
+        setSelectValue($("domain"), "attr");
+        $("pair").value = "ja-zh";
+        $("segNo").value = "seg001";
+        state.srcCues = parseSrt(`1
+00:00:00,000 --> 00:00:06,140
+深深的植根于我们的历史和文化遗产
+
+2
+00:00:06,900 --> 00:00:10,080
+当前乌克兰危机还在延宕
+
+3
+00:00:10,280 --> 00:00:12,500
+地面战事仍未停歇`);
+        state.tgtCues = parseSrt(`1
+00:00:00,000 --> 00:00:09,200
+Profundamente arraigado en nuestra historia y patrimonio cultural
+
+2
+00:00:09,220 --> 00:00:15,170
+Actualmente la crisis de Ucrania sigue prolongandose
+
+3
+00:00:15,360 --> 00:00:19,820
+未翻译`);
+        state.rows = makeRows(state.srcCues, state.tgtCues);
+        state.rows[2].notes = "误译：目标语需要重译";
+        renderRows();
+        runQc();
+      }
+
+      $("mergeSrt").addEventListener("click", mergeSrt);
+      $("srcSrt").addEventListener("change", inferMetadataFromFiles);
+      $("tgtSrt").addEventListener("change", inferMetadataFromFiles);
+      $("loadSample").addEventListener("click", loadSample);
+      $("runQc").addEventListener("click", runQc);
+      $("fixOverlaps").addEventListener("click", fixSmallOverlaps);
+      $("toggleSheetFullscreen").addEventListener("click", () => setSheetFullscreen());
+      $("generateJson").addEventListener("click", generateJson);
+      $("validateJson").addEventListener("click", () => {
+        if (!state.currentJson) generateJson();
+        else renderValidation(validatePayload(state.currentJson));
+      });
+      $("downloadJson").addEventListener("click", () => {
+        if (!state.currentJson) generateJson();
+        downloadText(deliveryJsonName(), JSON.stringify(state.currentJson, null, 2), "application/json;charset=utf-8");
+      });
+      $("downloadJsonBottom").addEventListener("click", () => {
+        if (!state.currentJson) generateJson();
+        downloadText(deliveryJsonName(), JSON.stringify(state.currentJson, null, 2), "application/json;charset=utf-8");
+      });
+      $("downloadExcel").addEventListener("click", downloadExcelFile);
+      $("downloadExcelSheet").addEventListener("click", downloadExcelFile);
+      $("downloadExcelBottom").addEventListener("click", downloadExcelFile);
+      $("downloadCsv").addEventListener("click", () => {
+        collectRows();
+        downloadText(`${$("alignId").value || "alignment"}_align.csv`, rowsToCsv(), "text/csv;charset=utf-8");
+      });
+      $("copyJson").addEventListener("click", async () => {
+        if (!state.currentJson) generateJson();
+        await navigator.clipboard.writeText(JSON.stringify(state.currentJson, null, 2));
+      });
+      $("downloadReport").addEventListener("click", () => {
+        runQc();
+        const report = {
+          not_delivery: true,
+          note: "This QC report is only for local checking. Deliver the *_align.qc.json file instead.",
+          align_id: $("alignId").value,
+          generated_at: new Date().toISOString(),
+          source_cues: state.srcCues.length,
+          target_cues: state.tgtCues.length,
+          rows: state.rows.length,
+          issues: state.issues,
+        };
+        downloadText(`${$("alignId").value || "alignment"}_qc_report.json`, JSON.stringify(report, null, 2), "application/json;charset=utf-8");
+      });
+      $("addRow").addEventListener("click", () => {
+        collectRows();
+        state.rows.push({ sentId: state.rows.length + 1, srcTime: "", srcText: "", tgtTime: "", tgtText: "", notes: "" });
+        renderRows();
+      });
+      $("importCsv").addEventListener("click", () => $("csvImport").click());
+      $("csvImport").addEventListener("change", async (event) => {
+        const text = await readFile(event.target.files[0]);
+        state.rows = parseCsv(text);
+        renderRows();
+        runQc();
+      });
+      ["alignId", "scene", "domain", "pair", "segNo"].forEach((id) => {
+        $(id).addEventListener("input", updateCounts);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && $("alignPanel").classList.contains("align-fullscreen")) {
+          setSheetFullscreen(false);
+        }
+      });
+
+      renderRows();
+      updateCounts();
+    </script>
+  </body>
+</html>

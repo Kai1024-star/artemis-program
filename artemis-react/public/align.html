@@ -327,8 +327,14 @@
     <main class="page">
       <header class="topbar">
         <div class="brand">ARTEMIS</div>
-        <a href="/">返回术语抽取系统</a>
+        <a href="http://127.0.0.1:5173/" data-console-link>返回术语抽取系统</a>
       </header>
+      <script>
+        const consoleLink = document.querySelector("[data-console-link]");
+        if (consoleLink && window.location.protocol !== "file:") {
+          consoleLink.href = "/";
+        }
+      </script>
 
       <section class="hero">
         <p>Subtitle Alignment Console</p>
