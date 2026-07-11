@@ -452,7 +452,7 @@ export default function App() {
         <div className="nav-brand">ARTEMIS</div>
         <div className="mission-clocks" aria-label="Mission clocks">
           <div><span>Beijing</span><strong>{formatTimeInZone(now, "Asia/Shanghai")}</strong></div>
-          <div><span>Tokyo</span><strong>{formatTimeInZone(now, "Asia/Tokyo")}</strong></div>
+          <div><span>London</span><strong>{formatTimeInZone(now, "Europe/London")}</strong></div>
           <div><span>New York</span><strong>{formatTimeInZone(now, "America/New_York")}</strong></div>
           <div><span>Mars</span><strong>{formatMarsTime(now)}</strong></div>
           <div><span>Moon</span><strong>{formatMoonTime(now)}</strong></div>
